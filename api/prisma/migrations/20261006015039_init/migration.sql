@@ -1,6 +1,8 @@
 -- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
+SET search_path TO public, extensions;
+
 -- CreateEnum
 CREATE TYPE "VehicleType" AS ENUM ('MOTORCYCLE', 'CAR');
 

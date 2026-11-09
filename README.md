@@ -85,6 +85,9 @@ npx tsx prisma/seed.ts
 
 El seed es idempotente. La configuración de la base de datos se define en
 `api/.env` mediante `DATABASE_URL`; consulta [api/.env.example](api/.env.example).
+En Supabase, activa PostGIS antes de ejecutar las migraciones. La API contempla
+la extensión en los esquemas `public` y `extensions`, que es donde Supabase suele
+instalarla.
 
 ## Iniciar la app móvil
 

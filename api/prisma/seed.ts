@@ -1,6 +1,11 @@
 import * as argon2 from 'argon2';
 import { randomUUID } from 'node:crypto';
-import { PrismaClient, PowerCategory, VehicleType } from '../generated/prisma';
+import {
+  Prisma,
+  PrismaClient,
+  PowerCategory,
+  VehicleType,
+} from '../generated/prisma';
 import circuitData from './data/circuits.json';
 import {
   detectCircuitAttempts,
@@ -11,6 +16,15 @@ import { haversineDistanceMeters } from '../src/common/geo';
 
 const prisma = new PrismaClient();
 const DEMO_PASSWORD = 'xlr8-demo-password';
+
+async function withPostgis<T>(
+  operation: (transaction: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  return prisma.$transaction(async (transaction) => {
+    await transaction.$executeRaw`SET LOCAL search_path TO public, extensions`;
+    return operation(transaction);
+  });
+}
 
 interface CircuitSeed {
   name: string;
@@ -172,32 +186,38 @@ async function upsertCircuit(seedData: CircuitSeed): Promise<string> {
   const id = existing?.id ?? randomUUID();
 
   if (existing) {
-    await prisma.$executeRaw`
-      UPDATE "Circuit"
-      SET
-        "description" = ${seedData.description},
-        "startLine" = ST_GeomFromText(${seedData.startLineWkt}, 4326),
-        "finishLine" = ST_GeomFromText(${seedData.finishLineWkt}, 4326),
-        "referencePath" = ST_GeomFromText(${seedData.referencePathWkt}, 4326),
-        "lengthMeters" = ${seedData.lengthMeters}
-      WHERE "id" = ${id}
-    `;
+    await withPostgis(
+      (transaction) =>
+        transaction.$executeRaw`
+        UPDATE "Circuit"
+        SET
+          "description" = ${seedData.description},
+          "startLine" = ST_GeomFromText(${seedData.startLineWkt}, 4326),
+          "finishLine" = ST_GeomFromText(${seedData.finishLineWkt}, 4326),
+          "referencePath" = ST_GeomFromText(${seedData.referencePathWkt}, 4326),
+          "lengthMeters" = ${seedData.lengthMeters}
+        WHERE "id" = ${id}
+      `,
+    );
     return id;
   }
 
-  await prisma.$executeRaw`
-    INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "createdAt")
-    VALUES (
-      ${id},
-      ${seedData.name},
-      ${seedData.description},
-      ST_GeomFromText(${seedData.startLineWkt}, 4326),
-      ST_GeomFromText(${seedData.finishLineWkt}, 4326),
-      ST_GeomFromText(${seedData.referencePathWkt}, 4326),
-      ${seedData.lengthMeters},
-      now()
-    )
-  `;
+  await withPostgis(
+    (transaction) =>
+      transaction.$executeRaw`
+      INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "createdAt")
+      VALUES (
+        ${id},
+        ${seedData.name},
+        ${seedData.description},
+        ST_GeomFromText(${seedData.startLineWkt}, 4326),
+        ST_GeomFromText(${seedData.finishLineWkt}, 4326),
+        ST_GeomFromText(${seedData.referencePathWkt}, 4326),
+        ${seedData.lengthMeters},
+        now()
+      )
+    `,
+  );
   return id;
 }
 
@@ -294,6 +314,7 @@ async function ensureCircuitAttempt(
   const avgSpeedKmh = distanceMeters / 1000 / (durationSeconds / 3600);
 
   await prisma.$transaction(async (transaction) => {
+    await transaction.$executeRaw`SET LOCAL search_path TO public, extensions`;
     const activityData = {
       userId,
       vehicleId,

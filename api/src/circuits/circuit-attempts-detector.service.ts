@@ -33,18 +33,21 @@ export class CircuitAttemptsDetectorService {
     vehicle: Vehicle,
     points: AttemptTrackPoint[],
   ): Promise<CircuitAttempt[]> {
-    const candidates = await this.prisma.$queryRaw<CandidateCircuitRow[]>`
-      SELECT
-        c."id" as "id",
-        c."lengthMeters" as "lengthMeters",
-        ST_AsGeoJSON(c."startLine") as "startLineGeoJson",
-        ST_AsGeoJSON(c."finishLine") as "finishLineGeoJson"
-      FROM "Circuit" c
-      INNER JOIN "Activity" a ON a."id" = ${activityId}
-      WHERE a."path" IS NOT NULL
-        AND ST_Intersects(c."startLine", a."path")
-        AND ST_Intersects(c."finishLine", a."path")
-    `;
+    const candidates = await this.prisma.withPostgis(
+      (transaction) =>
+        transaction.$queryRaw<CandidateCircuitRow[]>`
+        SELECT
+          c."id" as "id",
+          c."lengthMeters" as "lengthMeters",
+          ST_AsGeoJSON(c."startLine") as "startLineGeoJson",
+          ST_AsGeoJSON(c."finishLine") as "finishLineGeoJson"
+        FROM "Circuit" c
+        INNER JOIN "Activity" a ON a."id" = ${activityId}
+        WHERE a."path" IS NOT NULL
+          AND ST_Intersects(c."startLine", a."path")
+          AND ST_Intersects(c."finishLine", a."path")
+      `,
+    );
 
     const created: CircuitAttempt[] = [];
 

@@ -81,8 +81,9 @@ export class CircuitsService {
       );
     }
 
-    const rows = hasAll
-      ? await this.prisma.$queryRaw<
+    const rows = await this.prisma.withPostgis(async (transaction) => {
+      if (hasAll) {
+        return transaction.$queryRaw<
           (Omit<CircuitListItem, 'location' | 'referencePath'> & {
             locationJson: string | null;
             referencePathJson: string | null;
@@ -113,13 +114,15 @@ export class CircuitsService {
             ${query.radiusKm! * 1000}
           )
           ORDER BY "distanceMeters" ASC
-        `
-      : await this.prisma.$queryRaw<
-          (Omit<CircuitListItem, 'location' | 'referencePath'> & {
-            locationJson: string | null;
-            referencePathJson: string | null;
-          })[]
-        >`
+        `;
+      }
+
+      return transaction.$queryRaw<
+        (Omit<CircuitListItem, 'location' | 'referencePath'> & {
+          locationJson: string | null;
+          referencePathJson: string | null;
+        })[]
+      >`
           SELECT
             "id",
             "name",
@@ -136,7 +139,8 @@ export class CircuitsService {
             ST_AsGeoJSON("referencePath") as "referencePathJson"
           FROM "Circuit"
           ORDER BY "name" ASC
-        `;
+      `;
+    });
 
     return rows.map(({ locationJson, referencePathJson, ...circuit }) => {
       const location = locationJson
@@ -158,30 +162,33 @@ export class CircuitsService {
   }
 
   async findOne(id: string): Promise<CircuitDetail> {
-    const rows = await this.prisma.$queryRaw<
-      {
-        id: string;
-        name: string;
-        description: string | null;
-        lengthMeters: number;
-        createdAt: Date;
-        startLine: string;
-        finishLine: string;
-        referencePath: string | null;
-      }[]
-    >`
-      SELECT
-        "id",
-        "name",
-        "description",
-        "lengthMeters",
-        "createdAt",
-        ST_AsGeoJSON("startLine") as "startLine",
-        ST_AsGeoJSON("finishLine") as "finishLine",
-        ST_AsGeoJSON("referencePath") as "referencePath"
-      FROM "Circuit"
-      WHERE "id" = ${id}
-    `;
+    const rows = await this.prisma.withPostgis(
+      (transaction) =>
+        transaction.$queryRaw<
+          {
+            id: string;
+            name: string;
+            description: string | null;
+            lengthMeters: number;
+            createdAt: Date;
+            startLine: string;
+            finishLine: string;
+            referencePath: string | null;
+          }[]
+        >`
+        SELECT
+          "id",
+          "name",
+          "description",
+          "lengthMeters",
+          "createdAt",
+          ST_AsGeoJSON("startLine") as "startLine",
+          ST_AsGeoJSON("finishLine") as "finishLine",
+          ST_AsGeoJSON("referencePath") as "referencePath"
+        FROM "Circuit"
+        WHERE "id" = ${id}
+      `,
+    );
 
     const row = rows[0];
     if (!row) {

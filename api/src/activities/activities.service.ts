@@ -100,6 +100,7 @@ export class ActivitiesService {
     const stats = computeStats(filteredPoints, dto.startedAt, dto.endedAt);
 
     const activity = await this.prisma.$transaction(async (transaction) => {
+      await transaction.$executeRaw`SET LOCAL search_path TO public, extensions`;
       const createdActivity = await transaction.activity.create({
         data: {
           userId,
@@ -198,29 +199,32 @@ export class ActivitiesService {
       throw new NotFoundException('Actividad no encontrada');
     }
 
-    const rows = await this.prisma.$queryRaw<{ geojson: string | null }[]>`
-      SELECT ST_AsGeoJSON(COALESCE(
-        (
-          SELECT CASE
-            WHEN "path" IS NULL THEN NULL
-            WHEN ST_NPoints(ST_Simplify("path", 0.00005)) >= 2
-              THEN ST_Simplify("path", 0.00005)
-            ELSE "path"
-          END
-          FROM "Activity"
-          WHERE "id" = ${id}
-        ),
-        (
-          SELECT ST_MakeLine(
-            ST_SetSRID(ST_MakePoint("lng", "lat"), 4326)
-            ORDER BY "sequence"
+    const rows = await this.prisma.withPostgis(
+      (transaction) =>
+        transaction.$queryRaw<{ geojson: string | null }[]>`
+        SELECT ST_AsGeoJSON(COALESCE(
+          (
+            SELECT CASE
+              WHEN "path" IS NULL THEN NULL
+              WHEN ST_NPoints(ST_Simplify("path", 0.00005)) >= 2
+                THEN ST_Simplify("path", 0.00005)
+              ELSE "path"
+            END
+            FROM "Activity"
+            WHERE "id" = ${id}
+          ),
+          (
+            SELECT ST_MakeLine(
+              ST_SetSRID(ST_MakePoint("lng", "lat"), 4326)
+              ORDER BY "sequence"
+            )
+            FROM "TrackPoint"
+            WHERE "activityId" = ${id}
+            HAVING COUNT(*) >= 2
           )
-          FROM "TrackPoint"
-          WHERE "activityId" = ${id}
-          HAVING COUNT(*) >= 2
-        )
-      )) as geojson
-    `;
+        )) as geojson
+      `,
+    );
     const geojson = rows[0]?.geojson;
     const simplifiedPath = geojson
       ? (JSON.parse(geojson) as GeoJsonLineString)
