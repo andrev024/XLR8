@@ -1,0 +1,532 @@
+[
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "FZ",
+    "version": "2.0 (149 cc)",
+    "yearFrom": 2015,
+    "yearTo": 2021,
+    "horsepower": 13,
+    "source": "Ficha técnica Yamaha FZ 2.0 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "FZ-S FI",
+    "version": "FI (149 cc)",
+    "yearFrom": 2022,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha técnica Yamaha FZ-S FI Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "XTZ 150",
+    "version": "150 cc",
+    "yearFrom": 2019,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha técnica Yamaha XTZ 150 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "MT-03",
+    "version": "321 cc",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 42,
+    "source": "Ficha técnica Yamaha MT-03"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "MT-07",
+    "version": "689 cc",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 73,
+    "source": "Ficha técnica Yamaha MT-07"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "CB 125F",
+    "version": "125 cc",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 11,
+    "source": "Ficha técnica Honda CB 125F Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "XR 150L",
+    "version": "150 cc",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha técnica Honda XR 150L Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "CB 190R",
+    "version": "184 cc",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 16,
+    "source": "Ficha técnica Honda CB 190R"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "XRE 300",
+    "version": "291 cc",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 25,
+    "source": "Ficha técnica Honda XRE 300"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "ADV 160",
+    "version": "157 cc",
+    "yearFrom": 2023,
+    "yearTo": null,
+    "horsepower": 16,
+    "source": "Ficha técnica Honda ADV 160"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Suzuki",
+    "model": "GN 125",
+    "version": "125 cc",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 11,
+    "source": "Ficha técnica Suzuki GN 125 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Suzuki",
+    "model": "Gixxer 150",
+    "version": "155 cc",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 14,
+    "source": "Ficha técnica Suzuki Gixxer 150"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Suzuki",
+    "model": "DR 150",
+    "version": "150 cc",
+    "yearFrom": 2020,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha técnica Suzuki DR 150 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Suzuki",
+    "model": "V-Strom 250",
+    "version": "250 cc",
+    "yearFrom": 2018,
+    "yearTo": null,
+    "horsepower": 25,
+    "source": "Ficha técnica Suzuki V-Strom 250"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Bajaj",
+    "model": "Boxer CT100",
+    "version": "102 cc",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 8,
+    "source": "Ficha técnica Bajaj Boxer CT100 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Bajaj",
+    "model": "Pulsar NS 125",
+    "version": "125 cc",
+    "yearFrom": 2019,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha técnica Bajaj Pulsar NS 125"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Bajaj",
+    "model": "Pulsar NS 200",
+    "version": "200 cc",
+    "yearFrom": 2014,
+    "yearTo": null,
+    "horsepower": 24,
+    "source": "Ficha técnica Bajaj Pulsar NS 200 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Bajaj",
+    "model": "Dominar 400",
+    "version": "373 cc",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 40,
+    "source": "Ficha técnica Bajaj Dominar 400"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "AKT",
+    "model": "NKD 125",
+    "version": "125 cc",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 10,
+    "source": "Ficha técnica AKT NKD 125 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "AKT",
+    "model": "TTR 200",
+    "version": "200 cc",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 17,
+    "source": "Ficha técnica AKT TTR 200 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "AKT",
+    "model": "Dynamic Pro",
+    "version": "125 cc",
+    "yearFrom": 2019,
+    "yearTo": null,
+    "horsepower": 9,
+    "source": "Ficha técnica AKT Dynamic Pro 125"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "KTM",
+    "model": "Duke 200",
+    "version": "200 cc",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 25,
+    "source": "Ficha técnica KTM 200 Duke"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "KTM",
+    "model": "Duke 390",
+    "version": "399 cc",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 44,
+    "source": "Ficha técnica KTM 390 Duke"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "KTM",
+    "model": "Adventure 250",
+    "version": "250 cc",
+    "yearFrom": 2021,
+    "yearTo": null,
+    "horsepower": 30,
+    "source": "Ficha técnica KTM 250 Adventure"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Kawasaki",
+    "model": "KLX 150",
+    "version": "150 cc",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha técnica Kawasaki KLX 150"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Kawasaki",
+    "model": "Z400",
+    "version": "399 cc",
+    "yearFrom": 2019,
+    "yearTo": null,
+    "horsepower": 45,
+    "source": "Ficha técnica Kawasaki Z400"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Royal Enfield",
+    "model": "Classic 350",
+    "version": "349 cc",
+    "yearFrom": 2022,
+    "yearTo": null,
+    "horsepower": 20,
+    "source": "Ficha técnica Royal Enfield Classic 350"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Royal Enfield",
+    "model": "Himalayan 450",
+    "version": "452 cc",
+    "yearFrom": 2024,
+    "yearTo": null,
+    "horsepower": 40,
+    "source": "Ficha técnica Royal Enfield Himalayan 450"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Onix",
+    "version": "1.0 Turbo",
+    "yearFrom": 2021,
+    "yearTo": null,
+    "horsepower": 116,
+    "source": "Ficha técnica Chevrolet Onix Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Joy",
+    "version": "1.4",
+    "yearFrom": 2020,
+    "yearTo": 2023,
+    "horsepower": 97,
+    "source": "Ficha técnica Chevrolet Joy Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Tracker",
+    "version": "1.2 Turbo",
+    "yearFrom": 2021,
+    "yearTo": null,
+    "horsepower": 130,
+    "source": "Ficha técnica Chevrolet Tracker Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Renault",
+    "model": "Kwid",
+    "version": "1.0",
+    "yearFrom": 2019,
+    "yearTo": null,
+    "horsepower": 66,
+    "source": "Ficha técnica Renault Kwid Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Renault",
+    "model": "Sandero",
+    "version": "1.6",
+    "yearFrom": 2015,
+    "yearTo": 2022,
+    "horsepower": 111,
+    "source": "Ficha técnica Renault Sandero Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Renault",
+    "model": "Duster",
+    "version": "1.3 Turbo",
+    "yearFrom": 2022,
+    "yearTo": null,
+    "horsepower": 154,
+    "source": "Ficha técnica Renault Duster Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Renault",
+    "model": "Logan",
+    "version": "1.6",
+    "yearFrom": 2015,
+    "yearTo": 2022,
+    "horsepower": 105,
+    "source": "Ficha técnica Renault Logan Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Mazda",
+    "model": "Mazda 2",
+    "version": "1.5",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 106,
+    "source": "Ficha técnica Mazda 2 Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Mazda",
+    "model": "Mazda 3",
+    "version": "2.0",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 153,
+    "source": "Ficha técnica Mazda 3 Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Mazda",
+    "model": "CX-30",
+    "version": "2.0",
+    "yearFrom": 2020,
+    "yearTo": null,
+    "horsepower": 153,
+    "source": "Ficha técnica Mazda CX-30 Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Mazda",
+    "model": "CX-5",
+    "version": "2.5",
+    "yearFrom": 2018,
+    "yearTo": null,
+    "horsepower": 188,
+    "source": "Ficha técnica Mazda CX-5 Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Toyota",
+    "model": "Corolla",
+    "version": "1.8 Hybrid",
+    "yearFrom": 2020,
+    "yearTo": null,
+    "horsepower": 138,
+    "source": "Ficha técnica Toyota Corolla Hybrid"
+  },
+  {
+    "type": "CAR",
+    "brand": "Toyota",
+    "model": "Hilux",
+    "version": "2.8 Diesel",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 201,
+    "source": "Ficha técnica Toyota Hilux Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Toyota",
+    "model": "Yaris Cross",
+    "version": "1.5",
+    "yearFrom": 2024,
+    "yearTo": null,
+    "horsepower": 105,
+    "source": "Ficha técnica Toyota Yaris Cross"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Picanto",
+    "version": "1.2",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 83,
+    "source": "Ficha técnica Kia Picanto Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Rio",
+    "version": "1.4",
+    "yearFrom": 2017,
+    "yearTo": 2023,
+    "horsepower": 99,
+    "source": "Ficha técnica Kia Rio Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Seltos",
+    "version": "1.4 Turbo",
+    "yearFrom": 2020,
+    "yearTo": null,
+    "horsepower": 138,
+    "source": "Ficha técnica Kia Seltos"
+  },
+  {
+    "type": "CAR",
+    "brand": "Hyundai",
+    "model": "Grand i10",
+    "version": "1.2",
+    "yearFrom": 2015,
+    "yearTo": null,
+    "horsepower": 83,
+    "source": "Ficha técnica Hyundai Grand i10"
+  },
+  {
+    "type": "CAR",
+    "brand": "Hyundai",
+    "model": "Tucson",
+    "version": "2.0",
+    "yearFrom": 2016,
+    "yearTo": null,
+    "horsepower": 154,
+    "source": "Ficha técnica Hyundai Tucson Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Nissan",
+    "model": "March",
+    "version": "1.6",
+    "yearFrom": 2015,
+    "yearTo": 2023,
+    "horsepower": 106,
+    "source": "Ficha técnica Nissan March"
+  },
+  {
+    "type": "CAR",
+    "brand": "Nissan",
+    "model": "Kicks",
+    "version": "1.6",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 118,
+    "source": "Ficha técnica Nissan Kicks Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Volkswagen",
+    "model": "Polo",
+    "version": "1.0 TSI",
+    "yearFrom": 2023,
+    "yearTo": null,
+    "horsepower": 101,
+    "source": "Ficha técnica Volkswagen Polo"
+  },
+  {
+    "type": "CAR",
+    "brand": "Volkswagen",
+    "model": "Virtus",
+    "version": "1.0 TSI",
+    "yearFrom": 2022,
+    "yearTo": null,
+    "horsepower": 101,
+    "source": "Ficha técnica Volkswagen Virtus"
+  },
+  {
+    "type": "CAR",
+    "brand": "Ford",
+    "model": "Escape",
+    "version": "2.0 EcoBoost",
+    "yearFrom": 2017,
+    "yearTo": null,
+    "horsepower": 250,
+    "source": "Ficha técnica Ford Escape"
+  },
+  {
+    "type": "CAR",
+    "brand": "Ford",
+    "model": "Territory",
+    "version": "1.5 EcoBoost",
+    "yearFrom": 2021,
+    "yearTo": null,
+    "horsepower": 160,
+    "source": "Ficha técnica Ford Territory"
+  }
+]

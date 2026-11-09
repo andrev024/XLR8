@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  api:
+    name: API lint, types and tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: xlr8
+          POSTGRES_PASSWORD: xlr8
+          POSTGRES_DB: xlr8_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U xlr8 -d xlr8_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://xlr8:xlr8@localhost:5432/xlr8_db?schema=public
+      JWT_ACCESS_SECRET: ci-access-secret-not-for-production
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN_DAYS: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - run: npm ci
+        working-directory: api
+      - run: npx prisma generate
+        working-directory: api
+      - run: npx prisma migrate deploy
+        working-directory: api
+      - run: npm run lint
+        working-directory: api
+      - run: npx tsc --noEmit
+        working-directory: api
+      - run: npm test -- --runInBand
+        working-directory: api
+      - run: npm run test:e2e -- --runInBand
+        working-directory: api
+
+  mobile:
+    name: Mobile lint, types and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+        working-directory: mobile
+      - run: npm run lint
+        working-directory: mobile
+      - run: npx tsc --noEmit
+        working-directory: mobile
+      - run: npm test -- --runInBand
+        working-directory: mobile

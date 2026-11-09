@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "XLR8",
+    "slug": "xlr8",
+    "scheme": "xlr8",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0E14",
+    "splash": {
+      "image": "./assets/android-icon-foreground.png",
+      "imageWidth": 220,
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0E14"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.xlr8.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "XLR8 usa tu ubicación para registrar y mostrar tus recorridos.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "XLR8 necesita tu ubicación incluso en segundo plano para mantener la grabación de tu ruta.",
+        "UIBackgroundModes": ["location"]
+      }
+    },
+    "android": {
+      "package": "com.xlr8.app",
+      "permissions": ["POST_NOTIFICATIONS"],
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0E14",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "XLR8 usa tu ubicación para registrar y mostrar tus recorridos.",
+          "locationAlwaysAndWhenInUsePermission": "XLR8 necesita tu ubicación incluso en segundo plano para mantener la grabación de tu ruta.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ]
+  }
+}

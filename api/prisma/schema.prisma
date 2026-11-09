@@ -1,0 +1,126 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum VehicleType {
+  MOTORCYCLE
+  CAR
+}
+
+enum PowerCategory {
+  LOW
+  MID
+  HIGH
+}
+
+model User {
+  id              String            @id @default(uuid())
+  email           String            @unique
+  passwordHash    String
+  displayName     String
+  createdAt       DateTime          @default(now())
+  refreshTokens   RefreshToken[]
+  vehicles        Vehicle[]
+  activities      Activity[]
+  circuitAttempts CircuitAttempt[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+}
+
+model Vehicle {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            VehicleType
+  brand           String
+  model           String
+  year            Int
+  horsepower      Int
+  powerCategory   PowerCategory
+  createdAt       DateTime         @default(now())
+  activities      Activity[]
+  circuitAttempts CircuitAttempt[]
+}
+
+model Activity {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId       String
+  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  startedAt       DateTime
+  endedAt         DateTime
+  distanceMeters  Float
+  durationSeconds Int
+  avgSpeedKmh     Float
+  maxSpeedKmh     Float
+  /// Ruta recorrida como geometry(LineString,4326); se gestiona con SQL crudo (@map no aplica a Unsupported).
+  path            Unsupported("geometry(LineString,4326)")?
+  createdAt       DateTime   @default(now())
+  trackPoints     TrackPoint[]
+  circuitAttempts CircuitAttempt[]
+}
+
+model TrackPoint {
+  id         BigInt   @id @default(autoincrement())
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  lat        Float
+  lng        Float
+  speedMs    Float?
+  recordedAt DateTime
+  /// Posición del punto dentro de la ruta (nombrado en inglés por convención del proyecto).
+  sequence   Int
+
+  @@index([activityId, sequence])
+}
+
+model Circuit {
+  id            String                                     @id @default(uuid())
+  name          String
+  description   String?
+  startLine     Unsupported("geometry(LineString,4326)")
+  finishLine    Unsupported("geometry(LineString,4326)")
+  referencePath Unsupported("geometry(LineString,4326)")?
+  lengthMeters  Float
+  createdAt     DateTime                                   @default(now())
+  attempts      CircuitAttempt[]
+}
+
+model CircuitAttempt {
+  id            String        @id @default(uuid())
+  circuitId     String
+  circuit       Circuit       @relation(fields: [circuitId], references: [id], onDelete: Cascade)
+  activityId    String
+  activity      Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId     String
+  vehicle       Vehicle       @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  /// Copiados del vehículo al momento del intento, para no perder la segmentación histórica si el vehículo cambia.
+  vehicleType   VehicleType
+  powerCategory PowerCategory
+  durationMs    Int
+  maxSpeedKmh   Float
+  isValid       Boolean
+  invalidReason String?
+  startedAt     DateTime
+  createdAt     DateTime      @default(now())
+
+  @@index([circuitId, vehicleType, powerCategory, isValid, durationMs])
+}
