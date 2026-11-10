@@ -44,15 +44,26 @@ describe('Vehicle catalog (e2e)', () => {
     await request(app.getHttpServer())
       .get('/catalog/versions?type=MOTORCYCLE&brand=Yamaha&model=FZ')
       .expect(200)
-      .expect([
-        {
-          version: '2.0 (149 cc)',
-          yearFrom: 2015,
-          yearTo: 2021,
-          horsepower: 13,
-          source: 'Ficha técnica Yamaha FZ 2.0 Colombia',
-        },
-      ]);
+      .expect((response) => {
+        expect(response.body).toEqual(
+          expect.arrayContaining([
+            {
+              version: '2.0 (149 cc)',
+              yearFrom: 2015,
+              yearTo: 2021,
+              horsepower: 13,
+              source: 'Ficha técnica Yamaha FZ 2.0 Colombia',
+            },
+            {
+              version: 'Versión 3.0 (149 cc)',
+              yearFrom: 2027,
+              yearTo: null,
+              horsepower: 12,
+              source: 'Ficha oficial Incolmotos Yamaha FZ 3.0 2027',
+            },
+          ]),
+        );
+      });
   });
 
   it('rejects invalid vehicle types', async () => {
