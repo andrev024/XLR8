@@ -18,6 +18,7 @@ import "./../src/features/recording/location-task";
 import { getUnfinishedSession } from "../src/features/recording/database";
 import {
   discardRecording,
+  restoreAutomaticRecording,
   restoreUnfinishedRecording,
 } from "../src/features/recording/service";
 import { syncActivityUploadQueue } from "../src/features/recording/upload-queue";
@@ -90,7 +91,10 @@ function FirstLaunchLegalNotice() {
                   "xlr8_legal_notice_accepted",
                   "true",
                 ).catch((error: unknown) => {
-                  console.error("No se pudo guardar la aceptación legal:", error);
+                  console.error(
+                    "No se pudo guardar la aceptación legal:",
+                    error,
+                  );
                   Alert.alert(
                     "Aviso legal",
                     "No se pudo guardar tu preferencia. El aviso volverá a mostrarse al abrir la app.",
@@ -129,6 +133,9 @@ function RecordingLifecycle() {
     void getUnfinishedSession()
       .then((session) => {
         if (!session || prompted.current) {
+          if (!session) {
+            void restoreAutomaticRecording().catch(showRecoveryError);
+          }
           return;
         }
         prompted.current = true;

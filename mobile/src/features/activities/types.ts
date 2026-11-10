@@ -21,8 +21,15 @@ export interface Activity {
   endedAt: string;
   distanceMeters: number;
   durationSeconds: number;
+  movingDurationSeconds?: number;
+  stoppedDurationSeconds?: number;
   avgSpeedKmh: number;
   maxSpeedKmh: number;
+  elevationGainMeters?: number;
+  averageAccuracyMeters?: number | null;
+  estimatedFuelLiters?: number | null;
+  responsibleDrivingConfirmed?: boolean;
+  responsibleDrivingDurationSeconds?: number;
   simplifiedPath?: {
     type: "LineString";
     coordinates: [number, number][];
@@ -37,10 +44,46 @@ export interface PaginatedActivities {
   total: number;
 }
 
+export interface ActivityPeriodSummary {
+  activityCount: number;
+  distanceMeters: number;
+  durationSeconds: number;
+  movingDurationSeconds: number;
+  stoppedDurationSeconds: number;
+  responsibleDrivingDurationSeconds: number;
+  averageSpeedKmh: number;
+  maxSpeedKmh: number;
+}
+
+export interface ActivitySummary {
+  week: ActivityPeriodSummary;
+  month: ActivityPeriodSummary;
+  year: ActivityPeriodSummary;
+}
+
+export interface ActivityAchievement {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  target: number;
+  unit: string;
+  unlocked: boolean;
+}
+
+export interface ActivityFilters {
+  vehicleId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  minDistanceMeters?: number;
+  maxDistanceMeters?: number;
+}
+
 export interface CreateActivityInput {
   vehicleId: string;
   startedAt: string;
   endedAt: string;
+  responsibleDrivingConfirmed?: boolean;
   points: {
     lat: number;
     lng: number;

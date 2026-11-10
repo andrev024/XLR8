@@ -15,6 +15,7 @@ export interface ActivityUploadPayload {
   vehicleId: string;
   startedAt: string;
   endedAt: string;
+  responsibleDrivingConfirmed?: boolean;
   points: TrackPoint[];
 }
 
@@ -51,7 +52,10 @@ async function syncQueue(): Promise<void> {
       const response = await createActivity(payload as ActivityUploadPayload);
       return {
         activityId: response.activity.id,
-        circuitAttempts: await summarizeCircuitAttempts(response.detectedAttempts, payload),
+        circuitAttempts: await summarizeCircuitAttempts(
+          response.detectedAttempts,
+          payload,
+        ),
       } satisfies ActivityUploadResult;
     },
     async (sessionId, result) => {
@@ -99,7 +103,10 @@ async function syncQueue(): Promise<void> {
       try {
         vehicle = await fetchVehicle(payload.vehicleId);
       } catch (error) {
-        console.error("No se pudo cargar el vehículo para clasificar el intento:", error);
+        console.error(
+          "No se pudo cargar el vehículo para clasificar el intento:",
+          error,
+        );
       }
     }
 
@@ -126,6 +133,7 @@ async function syncQueue(): Promise<void> {
             fetchLeaderboard(attempt.circuitId, {
               vehicleType: vehicle.type,
               powerCategory: vehicle.powerCategory,
+              period: "ALL_TIME",
             }),
           ]);
           const rankingEntry = leaderboard.find(
@@ -149,8 +157,14 @@ async function syncQueue(): Promise<void> {
     );
   }
 
-  function isActivityUploadResult(value: unknown): value is ActivityUploadResult {
-    if (typeof value !== "object" || value === null || !("activityId" in value)) {
+  function isActivityUploadResult(
+    value: unknown,
+  ): value is ActivityUploadResult {
+    if (
+      typeof value !== "object" ||
+      value === null ||
+      !("activityId" in value)
+    ) {
       return false;
     }
     return (

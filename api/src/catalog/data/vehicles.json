@@ -528,5 +528,180 @@
     "yearTo": null,
     "horsepower": 160,
     "source": "Ficha técnica Ford Territory"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "CBR 250R"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Honda",
+    "model": "CB 300F"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "FZ25"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "R15"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
+    "model": "NMAX 155"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Suzuki",
+    "model": "GSX-S150"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Bajaj",
+    "model": "Pulsar N250"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "KTM",
+    "model": "RC 390"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Kawasaki",
+    "model": "Ninja 400"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "BMW Motorrad",
+    "model": "G 310 GS"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Hero",
+    "model": "XPulse 200 4V"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "TVS",
+    "model": "Apache RTR 160 4V"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "CFMOTO",
+    "model": "450MT"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Triumph",
+    "model": "Speed 400"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Ducati",
+    "model": "Scrambler Icon"
+  },
+  {
+    "type": "CAR",
+    "brand": "Toyota",
+    "model": "RAV4"
+  },
+  {
+    "type": "CAR",
+    "brand": "Toyota",
+    "model": "Corolla Cross"
+  },
+  {
+    "type": "CAR",
+    "brand": "Nissan",
+    "model": "Versa"
+  },
+  {
+    "type": "CAR",
+    "brand": "Hyundai",
+    "model": "Creta"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Captiva"
+  },
+  {
+    "type": "CAR",
+    "brand": "Renault",
+    "model": "Arkana"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Sportage"
+  },
+  {
+    "type": "CAR",
+    "brand": "Ford",
+    "model": "Ranger"
+  },
+  {
+    "type": "CAR",
+    "brand": "Jeep",
+    "model": "Compass"
+  },
+  {
+    "type": "CAR",
+    "brand": "Subaru",
+    "model": "Forester"
+  },
+  {
+    "type": "CAR",
+    "brand": "BMW",
+    "model": "320i"
+  },
+  {
+    "type": "CAR",
+    "brand": "Mercedes-Benz",
+    "model": "GLA 200"
+  },
+  {
+    "type": "CAR",
+    "brand": "Audi",
+    "model": "Q3"
+  },
+  {
+    "type": "CAR",
+    "brand": "BYD",
+    "model": "Dolphin"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chery",
+    "model": "Tiggo 4 Pro"
+  },
+  {
+    "type": "CAR",
+    "brand": "Mitsubishi",
+    "model": "L200"
+  },
+  {
+    "type": "CAR",
+    "brand": "Suzuki",
+    "model": "Swift"
+  },
+  {
+    "type": "CAR",
+    "brand": "Peugeot",
+    "model": "2008"
+  },
+  {
+    "type": "CAR",
+    "brand": "Volvo",
+    "model": "XC40"
+  },
+  {
+    "type": "CAR",
+    "brand": "Porsche",
+    "model": "Macan"
   }
 ]

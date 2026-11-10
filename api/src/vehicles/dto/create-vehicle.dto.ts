@@ -2,8 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
   IsInt,
+  IsNumber,
+  IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
@@ -34,4 +37,32 @@ export class CreateVehicleDto {
   @IsInt()
   @Min(1)
   horsepower!: number;
+
+  @ApiProperty({ required: false, example: 689 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(5000)
+  engineDisplacementCc?: number;
+
+  @ApiProperty({ required: false, example: '4 tiempos, bicilíndrico' })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(80)
+  engineType?: string;
+
+  @ApiProperty({ required: false, example: 184 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(5000)
+  weightKg?: number;
+
+  @ApiProperty({ required: false, example: 4.5 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0.1)
+  @Max(100)
+  fuelConsumptionLitersPer100Km?: number;
 }

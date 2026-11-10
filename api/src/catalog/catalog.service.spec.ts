@@ -39,4 +39,16 @@ describe('CatalogService', () => {
       },
     ]);
   });
+
+  it('lists additional models without claiming unverified technical data', () => {
+    expect(service.findBrands(VehicleType.MOTORCYCLE)).toContain('Hero');
+    expect(service.findModels(VehicleType.MOTORCYCLE, 'Hero')).toContain(
+      'XPulse 200 4V',
+    );
+    expect(
+      service.findVersions(VehicleType.MOTORCYCLE, 'Hero', 'XPulse 200 4V'),
+    ).toEqual([]);
+    expect(service.findBrands(VehicleType.CAR)).toContain('BYD');
+    expect(service.findModels(VehicleType.CAR, 'BYD')).toContain('Dolphin');
+  });
 });

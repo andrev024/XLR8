@@ -16,8 +16,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.interface';
 import {
   ActivitiesService,
+  type ActivityAchievement,
   type ActivityCreationResult,
   type ActivityDetail,
+  type ActivityPeriodSummary,
   type PaginatedActivities,
 } from './activities.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
@@ -32,7 +34,8 @@ export class ActivitiesController {
 
   @Post()
   @ApiOperation({
-    summary: 'Sube una actividad con su ruta GPS y detecta intentos de circuito',
+    summary:
+      'Sube una actividad con su ruta GPS y detecta intentos de circuito',
   })
   create(
     @CurrentUser() user: AuthenticatedUser,
@@ -50,8 +53,30 @@ export class ActivitiesController {
     return this.activitiesService.findAll(user.id, query);
   }
 
+  @Get('summary')
+  @ApiOperation({ summary: 'Estadísticas acumuladas de la semana, mes y año' })
+  summary(@CurrentUser() user: AuthenticatedUser): Promise<{
+    week: ActivityPeriodSummary;
+    month: ActivityPeriodSummary;
+    year: ActivityPeriodSummary;
+  }> {
+    return this.activitiesService.summary(user.id);
+  }
+
+  @Get('achievements')
+  @ApiOperation({
+    summary: 'Logros personales sin clasificaciones competitivas de velocidad',
+  })
+  achievements(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ActivityAchievement[]> {
+    return this.activitiesService.achievements(user.id);
+  }
+
   @Get(':id')
-  @ApiOperation({ summary: 'Detalle de una actividad con su ruta simplificada' })
+  @ApiOperation({
+    summary: 'Detalle de una actividad con su ruta simplificada',
+  })
   findOne(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,

@@ -1,5 +1,6 @@
 import {
   calculateRecordingStats,
+  evaluateAutoStart,
   filterTrackPoints,
   syncQueuedActivities,
   transitionRecordingStatus,
@@ -29,6 +30,47 @@ describe("recording logic", () => {
     expect(stats.maxSpeedKmh).toBe(72);
     expect(stats.averageSpeedKmh).toBeGreaterThan(60);
     expect(stats.elapsedMs).toBe(60_000);
+  });
+
+  it("counts moving and stopped time separately", () => {
+    const stats = calculateRecordingStats(
+      [
+        point(4.6, -74, "2026-01-01T00:00:00.000Z", 5),
+        point(4.601, -74, "2026-01-01T00:00:10.000Z", 0),
+        point(4.601, -74, "2026-01-01T00:00:20.000Z", 0),
+      ],
+      20_000,
+    );
+
+    expect(stats.movingTimeMs).toBe(10_000);
+    expect(stats.stoppedTimeMs).toBe(10_000);
+  });
+
+  it("starts automatically only after sustained, measured movement", () => {
+    const result = evaluateAutoStart(
+      [],
+      [
+        point(4.6, -74, "2026-01-01T00:00:00.000Z", 4),
+        point(4.6002, -74, "2026-01-01T00:00:05.000Z", 4),
+        point(4.6004, -74, "2026-01-01T00:00:10.000Z", 4),
+      ],
+    );
+
+    expect(result.candidatePoints).toEqual([]);
+    expect(result.startedPoints).toHaveLength(3);
+  });
+
+  it("clears automatic start candidates when movement is too slow", () => {
+    const result = evaluateAutoStart(
+      [
+        point(4.6, -74, "2026-01-01T00:00:00.000Z", 4),
+        point(4.6002, -74, "2026-01-01T00:00:05.000Z", 4),
+      ],
+      [point(4.6002, -74, "2026-01-01T00:00:10.000Z", 0.5)],
+    );
+
+    expect(result.candidatePoints).toEqual([]);
+    expect(result.startedPoints).toBeNull();
   });
 
   it("allows only valid recording state transitions", () => {

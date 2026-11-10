@@ -44,6 +44,7 @@ export class CircuitAttemptsDetectorService {
         FROM "Circuit" c
         INNER JOIN "Activity" a ON a."id" = ${activityId}
         WHERE a."path" IS NOT NULL
+          AND c."isAuthorizedClosed" = true
           AND ST_Intersects(c."startLine", a."path")
           AND ST_Intersects(c."finishLine", a."path")
       `,
@@ -71,6 +72,7 @@ export class CircuitAttemptsDetectorService {
             vehicleId: vehicle.id,
             vehicleType: vehicle.type,
             powerCategory: vehicle.powerCategory,
+            horsepower: vehicle.horsepower,
             durationMs: attempt.durationMs,
             maxSpeedKmh: attempt.maxSpeedKmh,
             isValid: attempt.isValid,

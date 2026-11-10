@@ -22,6 +22,10 @@ export class VehiclesService {
         model: dto.model,
         year: dto.year,
         horsepower: dto.horsepower,
+        engineDisplacementCc: dto.engineDisplacementCc,
+        engineType: dto.engineType,
+        weightKg: dto.weightKg,
+        fuelConsumptionLitersPer100Km: dto.fuelConsumptionLitersPer100Km,
         powerCategory: calculatePowerCategory(dto.type, dto.horsepower),
       },
     });
@@ -56,7 +60,15 @@ export class VehiclesService {
     return this.prisma.vehicle.update({
       where: { id },
       data: {
-        ...dto,
+        type: dto.type,
+        brand: dto.brand,
+        model: dto.model,
+        year: dto.year,
+        horsepower: dto.horsepower,
+        engineDisplacementCc: dto.engineDisplacementCc,
+        engineType: dto.engineType,
+        weightKg: dto.weightKg,
+        fuelConsumptionLitersPer100Km: dto.fuelConsumptionLitersPer100Km,
         ...(shouldRecalculate
           ? { powerCategory: calculatePowerCategory(type, horsepower) }
           : {}),

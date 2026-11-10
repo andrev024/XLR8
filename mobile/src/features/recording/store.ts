@@ -29,7 +29,7 @@ export interface RecordingSessionState {
   start: () => void;
   pause: (now?: number) => void;
   resume: (now?: number) => void;
-  finish: (now?: number) => void;
+  finish: (now?: number, elapsedMsOverride?: number) => void;
   setSyncMessage: (message: string | null) => void;
   setCircuitAttempts: (attempts: CompletedCircuitAttempt[]) => void;
   reset: () => void;
@@ -81,16 +81,17 @@ export const useRecordingStore = create<RecordingSessionState>((set, get) => ({
     const status = transitionRecordingStatus(get().status, { type: "RESUME" });
     set({ status, activeSinceMs: now });
   },
-  finish: (now = Date.now()) => {
+  finish: (now = Date.now(), elapsedMsOverride?: number) => {
     const state = get();
     const status = transitionRecordingStatus(state.status, { type: "FINISH" });
     set({
       status,
       finishedAt: new Date(now).toISOString(),
       elapsedMs:
-        state.status === "recording"
+        elapsedMsOverride ??
+        (state.status === "recording"
           ? state.elapsedMs + Math.max(0, now - (state.activeSinceMs ?? now))
-          : state.elapsedMs,
+          : state.elapsedMs),
       activeSinceMs: null,
     });
   },

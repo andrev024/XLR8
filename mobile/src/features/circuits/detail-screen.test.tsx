@@ -26,6 +26,7 @@ describe("circuit detail screen", () => {
       id: "circuit-1",
       name: "Circuito de prueba",
       description: "Ruta de demostración",
+      isAuthorizedClosed: true,
       lengthMeters: 2400,
       createdAt: "2026-01-01T00:00:00.000Z",
       startLine: {
@@ -66,6 +67,7 @@ describe("circuit detail screen", () => {
         durationMs: 65_432,
         vehicleBrand: "Yamaha",
         vehicleModel: "MT-07",
+        horsepower: 73,
         date: "2026-01-02T00:00:00.000Z",
       },
     ]);
@@ -107,9 +109,7 @@ describe("circuit detail screen", () => {
       expect(await view.findByText("Circuito de prueba")).toBeTruthy();
       expect(await view.findByText("Válido")).toBeTruthy();
       expect(await view.findAllByText("01:05.432")).toHaveLength(2);
-      expect(
-        await view.findByText("01:05.432 · posición #1"),
-      ).toBeTruthy();
+      expect(await view.findByText("01:05.432 · posición #1")).toBeTruthy();
       expect(await view.findByText("Piloto")).toBeTruthy();
       expect(api.history.get).toHaveLength(6);
     } finally {

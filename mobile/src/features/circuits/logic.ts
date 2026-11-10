@@ -1,9 +1,5 @@
 import type { Vehicle } from "../vehicles/types";
-import type {
-  LeaderboardCategory,
-  PowerCategory,
-  VehicleType,
-} from "./types";
+import type { LeaderboardCategory, PowerCategory, VehicleType } from "./types";
 
 export const POWER_CATEGORIES: PowerCategory[] = ["LOW", "MID", "HIGH"];
 export const VEHICLE_TYPES: VehicleType[] = ["MOTORCYCLE", "CAR"];
@@ -16,8 +12,13 @@ export function getInitialLeaderboardCategory(
     ? {
         vehicleType: preferredVehicle.type,
         powerCategory: preferredVehicle.powerCategory,
+        period: "ALL_TIME",
       }
-    : { vehicleType: "MOTORCYCLE", powerCategory: "LOW" };
+    : {
+        vehicleType: "MOTORCYCLE",
+        powerCategory: "LOW",
+        period: "ALL_TIME",
+      };
 }
 
 export function updateLeaderboardCategory(
@@ -52,7 +53,9 @@ export function distanceBetweenMeters(
   return 6_371_000 * 2 * Math.asin(Math.sqrt(value));
 }
 
-export function sortCircuitsByDistance<T extends { location: { lat: number; lng: number } | null }>(
+export function sortCircuitsByDistance<
+  T extends { location: { lat: number; lng: number } | null },
+>(
   circuits: T[],
   currentLocation: { latitude: number; longitude: number } | null,
 ): T[] {

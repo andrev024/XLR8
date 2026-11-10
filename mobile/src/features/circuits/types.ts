@@ -11,6 +11,7 @@ export interface Circuit {
   id: string;
   name: string;
   description: string | null;
+  isAuthorizedClosed: boolean;
   lengthMeters: number;
   createdAt: string;
   distanceMeters?: number;
@@ -37,6 +38,7 @@ export interface LeaderboardEntry {
   durationMs: number;
   vehicleBrand: string;
   vehicleModel: string;
+  horsepower: number;
   date: string;
 }
 
@@ -71,4 +73,7 @@ export interface MyCircuitAttempt {
 export interface LeaderboardCategory {
   vehicleType: VehicleType;
   powerCategory: PowerCategory;
+  period: LeaderboardPeriod;
 }
+
+export type LeaderboardPeriod = "ALL_TIME" | "WEEK" | "MONTH" | "YEAR";

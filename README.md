@@ -47,13 +47,29 @@ a punto en SQLite antes de enviarse a la API, por lo que una interrupción de
 red no elimina una actividad. La API valida los DTOs, separa controladores y
 servicios y usa PostGIS para persistir geometrías y detectar cruces.
 
+La grabación puede iniciarse manualmente o con detección automática optativa.
+Esta última exige movimiento sostenido (al menos 12 km/h, tres muestras durante
+10 segundos y 30 m acumulados) y finaliza tras 1, 3 o 5 minutos sin movimiento.
+Los puntos GPS se filtran por precisión, orden temporal y saltos implausibles;
+la altitud y precisión disponibles se guardan junto con las estadísticas de
+tiempo en movimiento y detenido.
+El historial permite filtrar recorridos por fecha, distancia y vehículo, y
+resume la actividad por semana, mes y año. Los logros son personales y se basan
+en constancia, distancia, recorridos y exploración aproximada de rutas. El
+tiempo de conducción responsable solo se cuenta cuando el usuario lo declara
+al finalizar; no se infiere seguridad a partir de la velocidad GPS.
+
 ## Modelo de datos
 
 - **User**: cuenta, identidad y relaciones con vehículos, actividades e intentos.
-- **Vehicle**: tipo (moto o carro), potencia y categoría de potencia.
-- **Activity**: vehículo, fechas, estadísticas calculadas y ruta GPS.
-- **TrackPoint**: posición, velocidad, instante y secuencia de cada punto GPS.
-- **Circuit**: nombre, longitud, ruta de referencia y líneas de salida y meta.
+- **Vehicle**: tipo (moto o carro), marca, modelo, año, potencia, cilindraje,
+  motor, peso y consumo opcionales, además de su categoría de potencia.
+- **Activity**: vehículo, fechas, distancia, duración total y efectiva,
+  velocidades, desnivel, precisión GPS y consumo estimado cuando se conoce.
+- **TrackPoint**: posición, velocidad, altitud, precisión, instante y secuencia
+  de cada punto GPS.
+- **Circuit**: nombre, longitud, ruta de referencia, líneas de salida y meta, y
+  aprobación explícita para rankings en instalaciones cerradas autorizadas.
 - **CircuitAttempt**: tiempo, validez, motivo y categoría de vehículo copiada al
   momento del intento.
 - **RefreshToken**: credenciales de renovación almacenadas con su hash.
@@ -131,12 +147,18 @@ build, no Expo Go. El mapa utiliza el estilo público sin llave
   conservan con el motivo para que el usuario pueda consultarlos.
 - **Rankings:** el leaderboard muestra los tres mejores tiempos válidos por
   circuito, tipo de vehículo y rango de potencia. Se conserva solo el mejor
-  intento de cada usuario para determinar su posición en cada categoría.
+  intento de cada usuario para determinar su posición en cada categoría. La
+  clasificación y la detección de intentos competitivos están deshabilitadas
+  por defecto y solo se habilitan para circuitos cerrados con autorización
+  verificada; los tramos viales incluidos en los datos de demostración no
+  generan tiempos ni rankings.
 - **Tolerancia a desconexiones:** los puntos se escriben primero en SQLite y
   las actividades finalizadas se mantienen en una cola local hasta sincronizar.
 - **Ubicación responsable:** se solicita permiso de ubicación en primer plano
-  para mostrar circuitos cercanos y se usa ubicación en segundo plano solo
-  durante una grabación activa.
+  para mostrar circuitos cercanos. La ubicación en segundo plano se solicita
+  únicamente cuando el usuario inicia una grabación o activa la detección
+  automática; esta última usa precisión y frecuencia reducidas para limitar el
+  consumo de batería.
 
 ## Validación y CI
 

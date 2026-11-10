@@ -82,6 +82,11 @@ export function VehicleForm({
       model: defaultValues?.model ?? "",
       year: defaultValues?.year,
       horsepower: defaultValues?.horsepower,
+      engineDisplacementCc: defaultValues?.engineDisplacementCc,
+      engineType: defaultValues?.engineType,
+      weightKg: defaultValues?.weightKg,
+      fuelConsumptionLitersPer100Km:
+        defaultValues?.fuelConsumptionLitersPer100Km,
     },
   });
 
@@ -395,6 +400,34 @@ export function VehicleForm({
         label="Potencia (hp)"
         name="horsepower"
         placeholder="73"
+      />
+      <TextField
+        control={control}
+        keyboardType="number-pad"
+        label="Cilindraje (cc, opcional)"
+        name="engineDisplacementCc"
+        placeholder="689"
+      />
+      <TextField
+        control={control}
+        label="Tipo de motor (opcional)"
+        name="engineType"
+        placeholder="4 tiempos, bicilíndrico"
+        autoCapitalize="sentences"
+      />
+      <TextField
+        control={control}
+        keyboardType="decimal-pad"
+        label="Peso aproximado (kg, opcional)"
+        name="weightKg"
+        placeholder="184"
+      />
+      <TextField
+        control={control}
+        keyboardType="decimal-pad"
+        label="Consumo (L/100 km, opcional)"
+        name="fuelConsumptionLitersPer100Km"
+        placeholder="4.5"
       />
       {powerCategory ? (
         <View style={styles.categoryRow}>

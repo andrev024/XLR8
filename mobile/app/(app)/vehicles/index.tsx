@@ -120,7 +120,14 @@ export default function VehiclesListScreen() {
             </View>
             <Text style={styles.cardDetail}>
               {typeLabels[item.type]} · {item.year} · {item.horsepower} hp
+              {item.engineDisplacementCc
+                ? ` · ${item.engineDisplacementCc} cc`
+                : ""}
+              {item.weightKg ? ` · ${item.weightKg} kg` : ""}
             </Text>
+            {item.engineType ? (
+              <Text style={styles.cardDetail}>{item.engineType}</Text>
+            ) : null}
           </Pressable>
         )}
       />

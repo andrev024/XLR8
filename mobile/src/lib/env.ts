@@ -1,3 +1,3 @@
 /** URL base de la API, leída de EXPO_PUBLIC_API_URL (ver .env.example). */
 export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+  process.env.EXPO_PUBLIC_API_URL ?? "https://xlr8-bkb5.onrender.com";

@@ -52,4 +52,40 @@ describe("vehicleFormSchema", () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it("accepts optional technical specifications and fuel consumption", () => {
+    const result = vehicleFormSchema.safeParse({
+      ...baseInput,
+      year: "2023",
+      horsepower: "73",
+      engineDisplacementCc: "689",
+      engineType: "4 tiempos, bicilíndrico",
+      weightKg: "184.5",
+      fuelConsumptionLitersPer100Km: "4.5",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toMatchObject({
+        engineDisplacementCc: 689,
+        engineType: "4 tiempos, bicilíndrico",
+        weightKg: 184.5,
+        fuelConsumptionLitersPer100Km: 4.5,
+      });
+    }
+  });
+
+  it("treats blank optional specifications as omitted", () => {
+    const result = vehicleFormSchema.safeParse({
+      ...baseInput,
+      year: "2023",
+      horsepower: "73",
+      engineDisplacementCc: "",
+      engineType: "",
+      weightKg: "",
+      fuelConsumptionLitersPer100Km: "",
+    });
+
+    expect(result.success).toBe(true);
+  });
 });

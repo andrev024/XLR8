@@ -41,6 +41,12 @@
       "expo-router",
       "expo-secure-store",
       "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "XLR8 solo accede a tus fotos cuando eliges una foto de perfil."
+        }
+      ],
       "@maplibre/maplibre-react-native",
       [
         "expo-location",

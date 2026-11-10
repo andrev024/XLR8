@@ -64,6 +64,7 @@ describe('Activities + Circuits flow (e2e)', () => {
   const circuitId = randomUUID();
   const circuitName = `E2E Test Circuit ${Date.now()}`;
   const simulationCircuitId = randomUUID();
+  const publicCircuitId = randomUUID();
   let accessToken: string;
   let vehicleId: string;
 
@@ -81,7 +82,7 @@ describe('Activities + Circuits flow (e2e)', () => {
     prisma = app.get(PrismaService);
 
     await prisma.$executeRaw`
-      INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "createdAt")
+      INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "isAuthorizedClosed", "createdAt")
       VALUES (
         ${circuitId},
         ${circuitName},
@@ -90,11 +91,12 @@ describe('Activities + Circuits flow (e2e)', () => {
         ST_GeomFromText(${circuitFinishLineWkt}, 4326),
         ST_GeomFromText(${circuitReferencePathWkt}, 4326),
         ${circuitLengthMeters},
+        true,
         now()
       )
     `;
     await prisma.$executeRaw`
-      INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "createdAt")
+      INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "isAuthorizedClosed", "createdAt")
       VALUES (
         ${simulationCircuitId},
         ${`${circuitName} Simulation`},
@@ -103,6 +105,21 @@ describe('Activities + Circuits flow (e2e)', () => {
         ST_GeomFromText(${simulationFinishLineWkt}, 4326),
         ST_GeomFromText(${simulationReferencePathWkt}, 4326),
         ${simulationCircuitLengthMeters},
+        true,
+        now()
+      )
+    `;
+    await prisma.$executeRaw`
+      INSERT INTO "Circuit" ("id", "name", "description", "startLine", "finishLine", "referencePath", "lengthMeters", "isAuthorizedClosed", "createdAt")
+      VALUES (
+        ${publicCircuitId},
+        ${`${circuitName} Public Road`},
+        ${boyacaFixture.description},
+        ST_GeomFromText(${circuitStartLineWkt}, 4326),
+        ST_GeomFromText(${circuitFinishLineWkt}, 4326),
+        ST_GeomFromText(${circuitReferencePathWkt}, 4326),
+        ${circuitLengthMeters},
+        false,
         now()
       )
     `;
@@ -112,7 +129,9 @@ describe('Activities + Circuits flow (e2e)', () => {
     if (prisma) {
       await prisma.user.deleteMany({ where: { email } });
       await prisma.circuit.deleteMany({
-        where: { id: { in: [circuitId, simulationCircuitId] } },
+        where: {
+          id: { in: [circuitId, simulationCircuitId, publicCircuitId] },
+        },
       });
     }
     if (app) {
@@ -142,9 +161,14 @@ describe('Activities + Circuits flow (e2e)', () => {
         model: 'MT-07',
         year: 2023,
         horsepower: 73,
+        engineDisplacementCc: 689,
+        engineType: '4 tiempos, bicilíndrico',
+        weightKg: 184,
+        fuelConsumptionLitersPer100Km: 4.5,
       })
       .expect(201);
     expect(vehicleResponse.body.powerCategory).toBe('MID');
+    expect(vehicleResponse.body.engineDisplacementCc).toBe(689);
     vehicleId = vehicleResponse.body.id as string;
 
     const circuitsResponse = await request(app.getHttpServer())
@@ -153,6 +177,7 @@ describe('Activities + Circuits flow (e2e)', () => {
       .expect(200);
     const listedCircuits = circuitsResponse.body as {
       id: string;
+      isAuthorizedClosed: boolean;
       location: { lng: number; lat: number } | null;
       referencePath: { type: string } | null;
     }[];
@@ -165,6 +190,10 @@ describe('Activities + Circuits flow (e2e)', () => {
       listedCircuits.find((circuit) => circuit.id === circuitId)?.referencePath
         ?.type,
     ).toBe('LineString');
+    expect(
+      listedCircuits.find((circuit) => circuit.id === publicCircuitId)
+        ?.isAuthorizedClosed,
+    ).toBe(false);
 
     const circuitResponse = await request(app.getHttpServer())
       .get(`/circuits/${circuitId}`)
@@ -198,6 +227,8 @@ describe('Activities + Circuits flow (e2e)', () => {
       lng: routePoint.lng,
       recordedAt: routePoint.recordedAt.toISOString(),
       speedMs: routePoint.speedMs,
+      accuracy: 5,
+      altitudeMeters: 100,
     }));
 
     const createResponse = await request(app.getHttpServer())
@@ -207,6 +238,7 @@ describe('Activities + Circuits flow (e2e)', () => {
         vehicleId,
         startedAt: points[0].recordedAt,
         endedAt: points[points.length - 1].recordedAt,
+        responsibleDrivingConfirmed: true,
         points,
       })
       .expect(201);
@@ -216,8 +248,14 @@ describe('Activities + Circuits flow (e2e)', () => {
         id: string;
         distanceMeters: number;
         durationSeconds: number;
+        movingDurationSeconds: number;
+        stoppedDurationSeconds: number;
         avgSpeedKmh: number;
         maxSpeedKmh: number;
+        averageAccuracyMeters: number;
+        estimatedFuelLiters: number;
+        responsibleDrivingConfirmed: boolean;
+        responsibleDrivingDurationSeconds: number;
       };
       detectedAttempts: Array<{
         id: string;
@@ -231,6 +269,14 @@ describe('Activities + Circuits flow (e2e)', () => {
     expect(activity.durationSeconds).toBeGreaterThan(0);
     expect(activity.avgSpeedKmh).toBeGreaterThan(0);
     expect(activity.maxSpeedKmh).toBeGreaterThan(0);
+    expect(activity.movingDurationSeconds).toBeGreaterThan(0);
+    expect(activity.stoppedDurationSeconds).toBeGreaterThanOrEqual(0);
+    expect(activity.averageAccuracyMeters).toBe(5);
+    expect(activity.estimatedFuelLiters).toBeGreaterThan(0);
+    expect(activity.responsibleDrivingConfirmed).toBe(true);
+    expect(activity.responsibleDrivingDurationSeconds).toBe(
+      activity.movingDurationSeconds,
+    );
     const persistedRoute = await prisma.$queryRaw<
       { hasPath: boolean; trackPointCount: bigint; pathPointCount: number }[]
     >`
@@ -247,6 +293,9 @@ describe('Activities + Circuits flow (e2e)', () => {
     const targetAttempts = detectedAttempts.filter(
       (attempt) => attempt.circuitId === circuitId,
     );
+    expect(
+      detectedAttempts.some((attempt) => attempt.circuitId === publicCircuitId),
+    ).toBe(false);
     expect(targetAttempts).toHaveLength(1);
     expect(targetAttempts[0].isValid).toBe(true);
     expect(targetAttempts[0].durationMs).toBeGreaterThan(0);
@@ -301,6 +350,28 @@ describe('Activities + Circuits flow (e2e)', () => {
       activitiesResponse.body.items.map((item: { id: string }) => item.id),
     ).toContain(activity.id);
 
+    const activitySummaryResponse = await request(app.getHttpServer())
+      .get('/activities/summary')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+    expect(activitySummaryResponse.body).toEqual(
+      expect.objectContaining({
+        week: expect.any(Object),
+        month: expect.any(Object),
+        year: expect.any(Object),
+      }),
+    );
+    const achievementsResponse = await request(app.getHttpServer())
+      .get('/activities/achievements')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+    expect(achievementsResponse.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'activities-10', unlocked: false }),
+        expect.objectContaining({ id: 'responsible-driving-1h' }),
+      ]),
+    );
+
     const activityDetailResponse = await request(app.getHttpServer())
       .get(`/activities/${activity.id}`)
       .set('Authorization', `Bearer ${accessToken}`)
@@ -342,6 +413,7 @@ describe('Activities + Circuits flow (e2e)', () => {
     expect(matchingLeaderboardResponse.body[0].attemptId).toBe(
       fasterTargetAttempts[0].id,
     );
+    expect(matchingLeaderboardResponse.body[0].horsepower).toBe(73);
     const personalLeaderboardResponse = await request(app.getHttpServer())
       .get(`/circuits/${circuitId}/leaderboard/me`)
       .query({ vehicleType: 'MOTORCYCLE', powerCategory: 'MID' })
@@ -358,6 +430,12 @@ describe('Activities + Circuits flow (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
     expect(nonMatchingLeaderboardResponse.body).toHaveLength(0);
+
+    await request(app.getHttpServer())
+      .get(`/circuits/${publicCircuitId}/leaderboard`)
+      .query({ vehicleType: 'MOTORCYCLE', powerCategory: 'MID' })
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(403);
 
     await request(app.getHttpServer())
       .delete(`/activities/${activity.id}`)

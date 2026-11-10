@@ -22,11 +22,11 @@ enum PowerCategory {
 }
 
 model User {
-  id              String            @id @default(uuid())
-  email           String            @unique
+  id              String           @id @default(uuid())
+  email           String           @unique
   passwordHash    String
   displayName     String
-  createdAt       DateTime          @default(now())
+  createdAt       DateTime         @default(now())
   refreshTokens   RefreshToken[]
   vehicles        Vehicle[]
   activities      Activity[]
@@ -43,63 +43,77 @@ model RefreshToken {
 }
 
 model Vehicle {
-  id              String           @id @default(uuid())
-  userId          String
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type            VehicleType
-  brand           String
-  model           String
-  year            Int
-  horsepower      Int
-  powerCategory   PowerCategory
-  createdAt       DateTime         @default(now())
-  activities      Activity[]
-  circuitAttempts CircuitAttempt[]
+  id                            String           @id @default(uuid())
+  userId                        String
+  user                          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                          VehicleType
+  brand                         String
+  model                         String
+  year                          Int
+  horsepower                    Int
+  engineDisplacementCc          Int?
+  engineType                    String?
+  weightKg                      Float?
+  fuelConsumptionLitersPer100Km Float?
+  powerCategory                 PowerCategory
+  createdAt                     DateTime         @default(now())
+  activities                    Activity[]
+  circuitAttempts               CircuitAttempt[]
 }
 
 model Activity {
-  id              String     @id @default(uuid())
-  userId          String
-  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  vehicleId       String
-  vehicle         Vehicle    @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
-  startedAt       DateTime
-  endedAt         DateTime
-  distanceMeters  Float
-  durationSeconds Int
-  avgSpeedKmh     Float
-  maxSpeedKmh     Float
+  id                                String                                    @id @default(uuid())
+  userId                            String
+  user                              User                                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicleId                         String
+  vehicle                           Vehicle                                   @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  startedAt                         DateTime
+  endedAt                           DateTime
+  distanceMeters                    Float
+  durationSeconds                   Int
+  movingDurationSeconds             Int                                       @default(0)
+  stoppedDurationSeconds            Int                                       @default(0)
+  avgSpeedKmh                       Float
+  maxSpeedKmh                       Float
+  elevationGainMeters               Float                                     @default(0)
+  averageAccuracyMeters             Float?
+  estimatedFuelLiters               Float?
+  responsibleDrivingConfirmed       Boolean                                   @default(false)
+  responsibleDrivingDurationSeconds Int                                       @default(0)
   /// Ruta recorrida como geometry(LineString,4326); se gestiona con SQL crudo (@map no aplica a Unsupported).
-  path            Unsupported("geometry(LineString,4326)")?
-  createdAt       DateTime   @default(now())
-  trackPoints     TrackPoint[]
-  circuitAttempts CircuitAttempt[]
+  path                              Unsupported("geometry(LineString,4326)")?
+  createdAt                         DateTime                                  @default(now())
+  trackPoints                       TrackPoint[]
+  circuitAttempts                   CircuitAttempt[]
 }
 
 model TrackPoint {
-  id         BigInt   @id @default(autoincrement())
-  activityId String
-  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  lat        Float
-  lng        Float
-  speedMs    Float?
-  recordedAt DateTime
+  id             BigInt   @id @default(autoincrement())
+  activityId     String
+  activity       Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  lat            Float
+  lng            Float
+  speedMs        Float?
+  accuracyMeters Float?
+  altitudeMeters Float?
+  recordedAt     DateTime
   /// Posición del punto dentro de la ruta (nombrado en inglés por convención del proyecto).
-  sequence   Int
+  sequence       Int
 
   @@index([activityId, sequence])
 }
 
 model Circuit {
-  id            String                                     @id @default(uuid())
-  name          String
-  description   String?
-  startLine     Unsupported("geometry(LineString,4326)")
-  finishLine    Unsupported("geometry(LineString,4326)")
-  referencePath Unsupported("geometry(LineString,4326)")?
-  lengthMeters  Float
-  createdAt     DateTime                                   @default(now())
-  attempts      CircuitAttempt[]
+  id                 String                                    @id @default(uuid())
+  name               String
+  description        String?
+  isAuthorizedClosed Boolean                                   @default(false)
+  startLine          Unsupported("geometry(LineString,4326)")
+  finishLine         Unsupported("geometry(LineString,4326)")
+  referencePath      Unsupported("geometry(LineString,4326)")?
+  lengthMeters       Float
+  createdAt          DateTime                                  @default(now())
+  attempts           CircuitAttempt[]
 }
 
 model CircuitAttempt {
@@ -115,6 +129,7 @@ model CircuitAttempt {
   /// Copiados del vehículo al momento del intento, para no perder la segmentación histórica si el vehículo cambia.
   vehicleType   VehicleType
   powerCategory PowerCategory
+  horsepower    Int           @default(0)
   durationMs    Int
   maxSpeedKmh   Float
   isValid       Boolean

@@ -21,14 +21,15 @@ npm install
 
 ## Variables de entorno
 
-Copia `.env.example` a `.env` y ajusta `EXPO_PUBLIC_API_URL` según cómo vayas
-a ejecutar la app:
+Copia `.env.example` a `.env`. La configuración predeterminada usa la API
+desplegada en Render; para desarrollo local, cambia `EXPO_PUBLIC_API_URL`:
 
 | Entorno de ejecución                     | Valor de `EXPO_PUBLIC_API_URL`          |
 | ---------------------------------------- | --------------------------------------- |
-| Web / iOS Simulator                      | `http://localhost:3000`                 |
-| Android Emulator                         | `http://10.0.2.2:3000` (alias del host) |
-| Dispositivo físico (Expo Go / dev build) | `http://<IP_LAN_DE_TU_MAQUINA>:3000`    |
+| API desplegada en Render | `https://xlr8-bkb5.onrender.com` |
+| Web / iOS Simulator      | `http://localhost:3000`          |
+| Android Emulator         | `http://10.0.2.2:3000`           |
+| Dispositivo físico       | `http://<IP_LAN_DE_TU_MAQUINA>:3000` |
 
 Para el caso de dispositivo físico, el teléfono y tu computadora deben estar
 en la misma red Wi-Fi, y debes usar la IP LAN de tu máquina (por ejemplo
@@ -102,3 +103,13 @@ potencia aproximada; el hp se puede editar y la categoría se actualiza al
 instante. La opción **Otro / no está en la lista** permite registrar modelos y
 versiones que todavía no estén catalogados. El catálogo no limita los datos que
 acepta la API.
+
+El catálogo también incluye modelos sin ficha técnica; para esos vehículos, el
+año y la potencia se ingresan manualmente. La foto de perfil es opcional, se
+guarda únicamente en el almacenamiento privado del dispositivo y no se envía a
+la API.
+
+En Android, iniciar una ruta solicita el permiso de ubicación en primer plano y
+usa el servicio de ubicación persistente de la notificación para continuar la
+grabación al cambiar de aplicación. En iOS también se solicita permiso de
+ubicación en segundo plano.

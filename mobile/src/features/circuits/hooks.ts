@@ -33,29 +33,31 @@ export function useCircuitQuery(id: string) {
 export function useCircuitLeaderboardQuery(
   id: string,
   category: LeaderboardCategory,
+  enabled = true,
 ) {
   return useQuery({
     queryKey: [...circuitsKey, id, "leaderboard", category],
     queryFn: () => fetchLeaderboard(id, category),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && enabled,
   });
 }
 
 export function useMyLeaderboardSummaryQuery(
   id: string,
   category: LeaderboardCategory,
+  enabled = true,
 ) {
   return useQuery({
     queryKey: [...circuitsKey, id, "leaderboard", "me", category],
     queryFn: () => fetchMyLeaderboardSummary(id, category),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && enabled,
   });
 }
 
-export function useMyCircuitAttemptsQuery(id: string) {
+export function useMyCircuitAttemptsQuery(id: string, enabled = true) {
   return useQuery({
     queryKey: [...circuitsKey, id, "my-attempts"],
     queryFn: () => fetchMyCircuitAttempts(id),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && enabled,
   });
 }

@@ -6,6 +6,14 @@ export interface VehicleCatalogEntry {
   type: VehicleType;
   brand: string;
   model: string;
+  version?: string;
+  yearFrom?: number;
+  yearTo?: number | null;
+  horsepower?: number;
+  source?: string;
+}
+
+export interface VehicleCatalogVersion {
   version: string;
   yearFrom: number;
   yearTo: number | null;
@@ -13,10 +21,13 @@ export interface VehicleCatalogEntry {
   source: string;
 }
 
-export type VehicleCatalogVersion = Omit<
-  VehicleCatalogEntry,
-  'type' | 'brand' | 'model'
->;
+type VehicleCatalogVersionEntry = VehicleCatalogEntry &
+  Required<
+    Pick<
+      VehicleCatalogEntry,
+      'version' | 'yearFrom' | 'yearTo' | 'horsepower' | 'source'
+    >
+  >;
 
 const catalogEntries = vehicleCatalog as VehicleCatalogEntry[];
 
@@ -47,6 +58,14 @@ export class CatalogService {
       .filter(
         (entry) =>
           entry.type === type && entry.brand === brand && entry.model === model,
+      )
+      .filter(
+        (entry): entry is VehicleCatalogVersionEntry =>
+          entry.version !== undefined &&
+          entry.yearFrom !== undefined &&
+          entry.yearTo !== undefined &&
+          entry.horsepower !== undefined &&
+          entry.source !== undefined,
       )
       .map(({ version, yearFrom, yearTo, horsepower, source }) => ({
         version,

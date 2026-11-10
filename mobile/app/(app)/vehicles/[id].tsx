@@ -96,7 +96,18 @@ export default function EditVehicleScreen() {
         </Text>
       ) : null}
       <VehicleForm
-        defaultValues={vehicle}
+        defaultValues={{
+          type: vehicle.type,
+          brand: vehicle.brand,
+          model: vehicle.model,
+          year: vehicle.year,
+          horsepower: vehicle.horsepower,
+          engineDisplacementCc: vehicle.engineDisplacementCc ?? undefined,
+          engineType: vehicle.engineType ?? undefined,
+          weightKg: vehicle.weightKg ?? undefined,
+          fuelConsumptionLitersPer100Km:
+            vehicle.fuelConsumptionLitersPer100Km ?? undefined,
+        }}
         onSubmit={onSubmit}
         submitLabel="Guardar cambios"
         submitting={updateMutation.isPending}

@@ -104,6 +104,43 @@ export default function ActivityDetailScreen() {
             label="Velocidad máxima"
             value={`${activity.maxSpeedKmh.toFixed(1)} km/h`}
           />
+          {activity.movingDurationSeconds !== undefined && (
+            <Stat
+              label="Tiempo en movimiento"
+              value={formatDuration(activity.movingDurationSeconds)}
+            />
+          )}
+          {activity.stoppedDurationSeconds !== undefined && (
+            <Stat
+              label="Tiempo detenido"
+              value={formatDuration(activity.stoppedDurationSeconds)}
+            />
+          )}
+          {activity.elevationGainMeters !== undefined && (
+            <Stat
+              label="Desnivel positivo"
+              value={`${activity.elevationGainMeters.toFixed(0)} m`}
+            />
+          )}
+          {activity.averageAccuracyMeters != null && (
+            <Stat
+              label="Precisión GPS media"
+              value={`${activity.averageAccuracyMeters.toFixed(0)} m`}
+            />
+          )}
+          {activity.estimatedFuelLiters != null && (
+            <Stat
+              label="Combustible estimado"
+              value={`${activity.estimatedFuelLiters.toFixed(2)} L`}
+            />
+          )}
+          {activity.responsibleDrivingConfirmed &&
+          activity.responsibleDrivingDurationSeconds !== undefined ? (
+            <Stat
+              label="Conducción responsable declarada"
+              value={formatDuration(activity.responsibleDrivingDurationSeconds)}
+            />
+          ) : null}
         </View>
 
         <View style={styles.attempts}>

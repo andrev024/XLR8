@@ -20,15 +20,27 @@ describe("circuit category and display logic", () => {
           createdAt: "2026-01-01T00:00:00Z",
         },
       ]),
-    ).toEqual({ vehicleType: "CAR", powerCategory: "MID" });
+    ).toEqual({
+      vehicleType: "CAR",
+      powerCategory: "MID",
+      period: "ALL_TIME",
+    });
   });
 
   it("uses a safe default without vehicles and preserves unchanged filters", () => {
     const initial = getInitialLeaderboardCategory([]);
-    expect(initial).toEqual({ vehicleType: "MOTORCYCLE", powerCategory: "LOW" });
-    expect(updateLeaderboardCategory(initial, { powerCategory: "HIGH" })).toEqual(
-      { vehicleType: "MOTORCYCLE", powerCategory: "HIGH" },
-    );
+    expect(initial).toEqual({
+      vehicleType: "MOTORCYCLE",
+      powerCategory: "LOW",
+      period: "ALL_TIME",
+    });
+    expect(
+      updateLeaderboardCategory(initial, { powerCategory: "HIGH" }),
+    ).toEqual({
+      vehicleType: "MOTORCYCLE",
+      powerCategory: "HIGH",
+      period: "ALL_TIME",
+    });
   });
 
   it("formats leaderboard times as mm:ss.mmm", () => {

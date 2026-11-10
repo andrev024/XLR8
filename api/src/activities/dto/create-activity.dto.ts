@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   ArrayMinSize,
   IsArray,
+  IsBoolean,
   IsDateString,
   IsNumber,
   IsOptional,
@@ -40,7 +41,15 @@ export class CreateTrackPointDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(50)
   accuracy?: number;
+
+  @ApiProperty({ required: false, example: 2500 })
+  @IsOptional()
+  @IsNumber()
+  @Min(-500)
+  @Max(10000)
+  altitudeMeters?: number;
 }
 
 export class CreateActivityDto {
@@ -63,4 +72,9 @@ export class CreateActivityDto {
   @ValidateNested({ each: true })
   @Type(() => CreateTrackPointDto)
   points!: CreateTrackPointDto[];
+
+  @ApiProperty({ required: false, default: false })
+  @IsOptional()
+  @IsBoolean()
+  responsibleDrivingConfirmed?: boolean;
 }

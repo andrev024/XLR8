@@ -1,17 +1,22 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NearbyCircuitsQueryDto } from './dto/nearby-circuits-query.dto';
-import { LeaderboardQueryDto } from './dto/leaderboard-query.dto';
+import {
+  LeaderboardPeriod,
+  LeaderboardQueryDto,
+} from './dto/leaderboard-query.dto';
 import type { PowerCategory, VehicleType } from '../../generated/prisma';
 
 export interface CircuitListItem {
   id: string;
   name: string;
   description: string | null;
+  isAuthorizedClosed: boolean;
   lengthMeters: number;
   createdAt: Date;
   distanceMeters?: number;
@@ -26,6 +31,7 @@ export interface CircuitDetail {
   id: string;
   name: string;
   description: string | null;
+  isAuthorizedClosed: boolean;
   lengthMeters: number;
   createdAt: Date;
   startLine: unknown;
@@ -41,6 +47,7 @@ export interface LeaderboardEntry {
   durationMs: number;
   vehicleBrand: string;
   vehicleModel: string;
+  horsepower: number;
   date: Date;
 }
 
@@ -93,6 +100,7 @@ export class CircuitsService {
             "id",
             "name",
             "description",
+            "isAuthorizedClosed",
             "lengthMeters",
             "createdAt",
             ST_Distance(
@@ -127,6 +135,7 @@ export class CircuitsService {
             "id",
             "name",
             "description",
+            "isAuthorizedClosed",
             "lengthMeters",
             "createdAt",
             ST_AsGeoJSON(COALESCE(
@@ -169,6 +178,7 @@ export class CircuitsService {
             id: string;
             name: string;
             description: string | null;
+            isAuthorizedClosed: boolean;
             lengthMeters: number;
             createdAt: Date;
             startLine: string;
@@ -180,6 +190,7 @@ export class CircuitsService {
           "id",
           "name",
           "description",
+          "isAuthorizedClosed",
           "lengthMeters",
           "createdAt",
           ST_AsGeoJSON("startLine") as "startLine",
@@ -199,6 +210,7 @@ export class CircuitsService {
       id: row.id,
       name: row.name,
       description: row.description,
+      isAuthorizedClosed: row.isAuthorizedClosed,
       lengthMeters: row.lengthMeters,
       createdAt: row.createdAt,
       startLine: JSON.parse(row.startLine) as unknown,
@@ -213,7 +225,8 @@ export class CircuitsService {
     id: string,
     query: LeaderboardQueryDto,
   ): Promise<LeaderboardEntry[]> {
-    await this.ensureCircuitExists(id);
+    await this.ensureAuthorizedClosedCircuit(id);
+    const periodStart = this.getPeriodStart(query.period);
 
     const rows = await this.prisma.$queryRaw<
       {
@@ -223,6 +236,7 @@ export class CircuitsService {
         durationMs: number;
         brand: string;
         model: string;
+        horsepower: number;
         startedAt: Date;
       }[]
     >`
@@ -234,6 +248,7 @@ export class CircuitsService {
           ca."durationMs" as "durationMs",
           v."brand" as "brand",
           v."model" as "model",
+          ca."horsepower" as "horsepower",
           ca."startedAt" as "startedAt"
         FROM "CircuitAttempt" ca
         INNER JOIN "User" u ON u."id" = ca."userId"
@@ -242,6 +257,7 @@ export class CircuitsService {
           AND ca."vehicleType" = ${query.vehicleType}::"VehicleType"
           AND ca."powerCategory" = ${query.powerCategory}::"PowerCategory"
           AND ca."isValid" = true
+          AND ca."startedAt" >= COALESCE(${periodStart}::timestamp, '-infinity'::timestamp)
         ORDER BY
           ca."userId",
           ca."durationMs" ASC,
@@ -260,6 +276,7 @@ export class CircuitsService {
       durationMs: row.durationMs,
       vehicleBrand: row.brand,
       vehicleModel: row.model,
+      horsepower: row.horsepower,
       date: row.startedAt,
     }));
   }
@@ -269,7 +286,8 @@ export class CircuitsService {
     userId: string,
     query: LeaderboardQueryDto,
   ): Promise<MyLeaderboardSummary> {
-    await this.ensureCircuitExists(id);
+    await this.ensureAuthorizedClosedCircuit(id);
+    const periodStart = this.getPeriodStart(query.period);
 
     const rows = await this.prisma.$queryRaw<
       { bestTimeMs: number; position: number }[]
@@ -285,6 +303,7 @@ export class CircuitsService {
           AND ca."vehicleType" = ${query.vehicleType}::"VehicleType"
           AND ca."powerCategory" = ${query.powerCategory}::"PowerCategory"
           AND ca."isValid" = true
+          AND ca."startedAt" >= COALESCE(${periodStart}::timestamp, '-infinity'::timestamp)
         ORDER BY
           ca."userId",
           ca."durationMs" ASC,
@@ -313,8 +332,23 @@ export class CircuitsService {
       : { bestTimeMs: null, position: null };
   }
 
+  private getPeriodStart(period?: LeaderboardPeriod): Date | null {
+    const daysByPeriod: Partial<Record<LeaderboardPeriod, number>> = {
+      [LeaderboardPeriod.WEEK]: 7,
+      [LeaderboardPeriod.MONTH]: 30,
+      [LeaderboardPeriod.YEAR]: 365,
+    };
+    const days = period ? daysByPeriod[period] : undefined;
+    if (days === undefined) {
+      return null;
+    }
+    const start = new Date();
+    start.setUTCDate(start.getUTCDate() - days);
+    return start;
+  }
+
   async myAttempts(id: string, userId: string): Promise<MyAttemptEntry[]> {
-    await this.ensureCircuitExists(id);
+    await this.ensureAuthorizedClosedCircuit(id);
 
     return this.prisma.circuitAttempt.findMany({
       where: { circuitId: id, userId },
@@ -333,10 +367,18 @@ export class CircuitsService {
     });
   }
 
-  private async ensureCircuitExists(id: string): Promise<void> {
-    const circuit = await this.prisma.circuit.findUnique({ where: { id } });
+  private async ensureAuthorizedClosedCircuit(id: string): Promise<void> {
+    const circuit = await this.prisma.circuit.findUnique({
+      where: { id },
+      select: { isAuthorizedClosed: true },
+    });
     if (!circuit) {
       throw new NotFoundException('Circuito no encontrado');
+    }
+    if (!circuit.isAuthorizedClosed) {
+      throw new ForbiddenException(
+        'El ranking solo está disponible en circuitos cerrados autorizados.',
+      );
     }
   }
 }

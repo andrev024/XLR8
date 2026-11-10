@@ -1,5 +1,10 @@
 import * as SQLite from "expo-sqlite";
-import { filterTrackPoints, type TrackPoint } from "./recording-logic";
+import {
+  DEFAULT_AUTO_INACTIVITY_TIMEOUT_MS,
+  filterTrackPoints,
+  type AutoRecordingConfig,
+  type TrackPoint,
+} from "./recording-logic";
 
 export interface StoredSession {
   id: string;
@@ -16,6 +21,11 @@ export interface PendingUpload {
   attempts: number;
   payload: string;
 }
+
+export type AutoRecordingSettings = Pick<
+  AutoRecordingConfig,
+  "enabled" | "vehicleId" | "inactivityTimeoutMs"
+>;
 
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -42,7 +52,8 @@ async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
             longitude REAL NOT NULL,
             recorded_at TEXT NOT NULL,
             speed_ms REAL,
-            accuracy REAL
+            accuracy REAL,
+            altitude_meters REAL
           );
           CREATE INDEX IF NOT EXISTS recording_points_session_time_idx
             ON recording_points(session_id, recorded_at);
@@ -52,7 +63,25 @@ async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
             attempts INTEGER NOT NULL DEFAULT 0,
             last_error TEXT
           );
+          CREATE TABLE IF NOT EXISTS auto_recording_config (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            enabled INTEGER NOT NULL DEFAULT 0,
+            vehicle_id TEXT,
+            inactivity_timeout_ms INTEGER NOT NULL DEFAULT ${DEFAULT_AUTO_INACTIVITY_TIMEOUT_MS},
+            candidate_points TEXT NOT NULL DEFAULT '[]',
+            last_movement_at TEXT
+          );
+          INSERT OR IGNORE INTO auto_recording_config (id)
+          VALUES (1);
         `);
+        const pointColumns = await database.getAllAsync<{ name: string }>(
+          "PRAGMA table_info(recording_points)",
+        );
+        if (!pointColumns.some((column) => column.name === "altitude_meters")) {
+          await database.execAsync(
+            "ALTER TABLE recording_points ADD COLUMN altitude_meters REAL",
+          );
+        }
         return database;
       },
     );
@@ -96,22 +125,52 @@ export async function appendLocalPoints(
   }
 
   const database = await getDatabase();
+  let savedPoints: TrackPoint[] = [];
   await database.withTransactionAsync(async () => {
-    for (const point of points) {
+    const previous = await database.getFirstAsync<{
+      latitude: number;
+      longitude: number;
+      recorded_at: string;
+      speed_ms: number | null;
+      accuracy: number | null;
+      altitude_meters: number | null;
+    }>(
+      `SELECT latitude, longitude, recorded_at, speed_ms, accuracy, altitude_meters
+       FROM recording_points WHERE session_id = ?
+       ORDER BY recorded_at DESC, id DESC LIMIT 1`,
+      sessionId,
+    );
+    const previousPoint: TrackPoint | null = previous
+      ? {
+          lat: previous.latitude,
+          lng: previous.longitude,
+          recordedAt: previous.recorded_at,
+          speedMs: previous.speed_ms,
+          accuracy: previous.accuracy,
+          altitudeMeters: previous.altitude_meters,
+        }
+      : null;
+    const validPoints = filterTrackPoints(
+      previousPoint ? [previousPoint, ...points] : points,
+    ).slice(previousPoint ? 1 : 0);
+    savedPoints = validPoints;
+
+    for (const point of validPoints) {
       await database.runAsync(
         `INSERT INTO recording_points
-          (session_id, latitude, longitude, recorded_at, speed_ms, accuracy)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+          (session_id, latitude, longitude, recorded_at, speed_ms, accuracy, altitude_meters)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         sessionId,
         point.lat,
         point.lng,
         point.recordedAt,
         point.speedMs,
         point.accuracy,
+        point.altitudeMeters ?? null,
       );
     }
   });
-  return points;
+  return savedPoints;
 }
 
 export async function getLocalPoints(sessionId: string): Promise<TrackPoint[]> {
@@ -122,8 +181,9 @@ export async function getLocalPoints(sessionId: string): Promise<TrackPoint[]> {
     recorded_at: string;
     speed_ms: number | null;
     accuracy: number | null;
+    altitude_meters: number | null;
   }>(
-    `SELECT latitude, longitude, recorded_at, speed_ms, accuracy
+    `SELECT latitude, longitude, recorded_at, speed_ms, accuracy, altitude_meters
      FROM recording_points WHERE session_id = ? ORDER BY recorded_at, id`,
     sessionId,
   );
@@ -133,7 +193,63 @@ export async function getLocalPoints(sessionId: string): Promise<TrackPoint[]> {
     recordedAt: row.recorded_at,
     speedMs: row.speed_ms,
     accuracy: row.accuracy,
+    altitudeMeters: row.altitude_meters,
   }));
+}
+
+export async function getAutoRecordingConfig(): Promise<AutoRecordingConfig> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync<{
+    enabled: number;
+    vehicle_id: string | null;
+    inactivity_timeout_ms: number;
+    candidate_points: string;
+    last_movement_at: string | null;
+  }>(
+    `SELECT enabled, vehicle_id, inactivity_timeout_ms, candidate_points, last_movement_at
+     FROM auto_recording_config WHERE id = 1`,
+  );
+  if (!row) {
+    throw new Error(
+      "No se pudo cargar la configuración de grabación automática.",
+    );
+  }
+  return {
+    enabled: row.enabled === 1,
+    vehicleId: row.vehicle_id,
+    inactivityTimeoutMs: row.inactivity_timeout_ms,
+    candidatePoints: JSON.parse(row.candidate_points) as TrackPoint[],
+    lastMovementAt: row.last_movement_at,
+  };
+}
+
+export async function saveAutoRecordingSettings(
+  settings: AutoRecordingSettings,
+): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync(
+    `UPDATE auto_recording_config
+     SET enabled = ?, vehicle_id = ?, inactivity_timeout_ms = ?,
+         candidate_points = '[]', last_movement_at = NULL
+     WHERE id = 1`,
+    settings.enabled ? 1 : 0,
+    settings.vehicleId,
+    settings.inactivityTimeoutMs,
+  );
+}
+
+export async function updateAutoRecordingProgress(
+  candidatePoints: TrackPoint[],
+  lastMovementAt: string | null,
+): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync(
+    `UPDATE auto_recording_config
+     SET candidate_points = ?, last_movement_at = ?
+     WHERE id = 1`,
+    JSON.stringify(candidatePoints),
+    lastMovementAt,
+  );
 }
 
 export async function updateLocalSession(

@@ -15,14 +15,20 @@ import { RouteMap } from "../../src/components/RouteMap";
 import { Screen } from "../../src/components/Screen";
 import { useVehiclesQuery } from "../../src/features/vehicles/hooks";
 import type { Vehicle } from "../../src/features/vehicles/types";
-import { calculateRecordingStats } from "../../src/features/recording/recording-logic";
+import {
+  calculateRecordingStats,
+  DEFAULT_AUTO_INACTIVITY_TIMEOUT_MS,
+} from "../../src/features/recording/recording-logic";
 import {
   beginRecording,
+  disableAutomaticRecording,
   discardRecording,
+  enableAutomaticRecording,
   finishRecording,
   pauseRecording,
   resumeRecording,
 } from "../../src/features/recording/service";
+import { getAutoRecordingConfig } from "../../src/features/recording/database";
 import { useRecordingStore } from "../../src/features/recording/store";
 import { formatDistance } from "../../src/features/activities/format";
 import { colors } from "../../src/theme/colors";
@@ -36,6 +42,10 @@ export default function RecordingScreen() {
   >(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [now, setNow] = useState(0);
+  const [autoEnabled, setAutoEnabled] = useState(false);
+  const [autoTimeoutMs, setAutoTimeoutMs] = useState(
+    DEFAULT_AUTO_INACTIVITY_TIMEOUT_MS,
+  );
   const elapsedMs =
     recording.elapsedMs +
     (recording.status === "recording" && recording.activeSinceMs !== null
@@ -54,6 +64,18 @@ export default function RecordingScreen() {
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    void getAutoRecordingConfig()
+      .then((config) => {
+        setAutoEnabled(config.enabled);
+        setAutoTimeoutMs(config.inactivityTimeoutMs);
+        if (config.vehicleId) {
+          setSelectedVehicleChoice(config.vehicleId);
+        }
+      })
+      .catch((error: unknown) => setErrorMessage(toErrorMessage(error)));
   }, []);
 
   if (vehiclesQuery.isLoading) {
@@ -82,6 +104,35 @@ export default function RecordingScreen() {
     setErrorMessage(null);
     try {
       await beginRecording(vehicle.id);
+      setAutoEnabled(false);
+    } catch (error) {
+      setErrorMessage(toErrorMessage(error));
+    }
+  }
+
+  async function handleAutomaticRecording(): Promise<void> {
+    if (!selectedVehicleId) {
+      setErrorMessage("Selecciona un vehículo para la detección automática.");
+      return;
+    }
+    setErrorMessage(null);
+    try {
+      await enableAutomaticRecording({
+        enabled: true,
+        vehicleId: selectedVehicleId,
+        inactivityTimeoutMs: autoTimeoutMs,
+      });
+      setAutoEnabled(true);
+    } catch (error) {
+      setErrorMessage(toErrorMessage(error));
+    }
+  }
+
+  async function handleDisableAutomaticRecording(): Promise<void> {
+    setErrorMessage(null);
+    try {
+      await disableAutomaticRecording();
+      setAutoEnabled(false);
     } catch (error) {
       setErrorMessage(toErrorMessage(error));
     }
@@ -108,6 +159,27 @@ export default function RecordingScreen() {
           onPress: () => void handleAction(discardRecording),
         },
       ],
+    );
+  }
+
+  function confirmFinish(): void {
+    Alert.alert(
+      "Finalizar recorrido",
+      "¿Quieres declarar que respetaste las normas de tránsito y los límites de velocidad? Es una declaración voluntaria y no se verifica mediante GPS.",
+      [
+        { text: "Seguir grabando", style: "cancel" },
+        {
+          text: "Finalizar sin declarar",
+          onPress: () =>
+            void handleAction(() => finishRecording(undefined, false)),
+        },
+        {
+          text: "Confirmar y finalizar",
+          onPress: () =>
+            void handleAction(() => finishRecording(undefined, true)),
+        },
+      ],
+      { cancelable: true },
     );
   }
 
@@ -208,6 +280,61 @@ export default function RecordingScreen() {
           </View>
         )}
 
+        {!active && (
+          <View style={styles.autoSection}>
+            <Text style={styles.sectionTitle}>Detección automática</Text>
+            <Text style={styles.meta}>
+              XLR8 iniciará el registro tras detectar movimiento sostenido y
+              guardará la ruta localmente. La ubicación en segundo plano puede
+              aumentar el consumo de batería.
+            </Text>
+            {autoEnabled ? (
+              <>
+                <Text style={styles.success}>
+                  Detección activa · finaliza la ruta tras{" "}
+                  {autoTimeoutMs / 60_000} min sin movimiento.
+                </Text>
+                <Button
+                  label="Desactivar detección"
+                  variant="secondary"
+                  onPress={() => void handleDisableAutomaticRecording()}
+                />
+              </>
+            ) : (
+              <>
+                <Text style={styles.meta}>Finalizar tras inactividad</Text>
+                <View style={styles.timeoutChoices}>
+                  {[60_000, 180_000, 300_000].map((timeoutMs) => (
+                    <Pressable
+                      accessibilityRole="radio"
+                      accessibilityState={{
+                        checked: autoTimeoutMs === timeoutMs,
+                      }}
+                      key={timeoutMs}
+                      onPress={() => setAutoTimeoutMs(timeoutMs)}
+                      style={[
+                        styles.timeoutChoice,
+                        autoTimeoutMs === timeoutMs &&
+                          styles.timeoutChoiceSelected,
+                      ]}
+                    >
+                      <Text style={styles.vehicleName}>
+                        {timeoutMs / 60_000} min
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Button
+                  label="Activar detección automática"
+                  variant="secondary"
+                  onPress={() => void handleAutomaticRecording()}
+                  disabled={!selectedVehicle}
+                />
+              </>
+            )}
+          </View>
+        )}
+
         <RouteMap
           points={recording.points}
           followLatest={active}
@@ -237,7 +364,7 @@ export default function RecordingScreen() {
             <View style={styles.actionButton}>
               <Button
                 label="Finalizar"
-                onPress={() => void handleAction(finishRecording)}
+                onPress={confirmFinish}
                 disabled={recording.points.length < 2}
               />
             </View>
@@ -255,7 +382,7 @@ export default function RecordingScreen() {
               <Button
                 label="Finalizar"
                 variant="secondary"
-                onPress={() => void handleAction(finishRecording)}
+                onPress={confirmFinish}
                 disabled={recording.points.length < 2}
               />
             </View>
@@ -285,6 +412,12 @@ function Statistics({
       <Stat label="Actual" value={`${stats.currentSpeedKmh.toFixed(0)} km/h`} />
       <Stat label="Media" value={`${stats.averageSpeedKmh.toFixed(0)} km/h`} />
       <Stat label="Máxima" value={`${stats.maxSpeedKmh.toFixed(0)} km/h`} />
+      <Stat label="En movimiento" value={formatClock(stats.movingTimeMs)} />
+      <Stat label="Detenido" value={formatClock(stats.stoppedTimeMs)} />
+      <Stat
+        label="Desnivel positivo"
+        value={`${stats.elevationGainMeters.toFixed(0)} m`}
+      />
     </View>
   );
 }
@@ -333,6 +466,25 @@ const styles = StyleSheet.create({
   },
   vehicleSection: {
     gap: 8,
+  },
+  autoSection: {
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: 12,
+  },
+  timeoutChoices: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  timeoutChoice: {
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+  },
+  timeoutChoiceSelected: {
+    borderColor: colors.accent,
   },
   vehicle: {
     backgroundColor: colors.surface,
