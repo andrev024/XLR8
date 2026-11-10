@@ -449,7 +449,7 @@ describe('Activities + Circuits flow (e2e)', () => {
     expect(emptyActivitiesResponse.body.total).toBe(1);
   });
 
-  it('verifica la suite completa de escenarios del generador contra la API', async () => {
+  it('verifica los escenarios GPS y rechaza velocidades imposibles', async () => {
     for (const [index, scenario] of SIMULATION_SCENARIOS.entries()) {
       const generated = generateRouteScenario(simulationReferencePath, {
         scenario,
@@ -467,7 +467,7 @@ describe('Activities + Circuits flow (e2e)', () => {
         speedMs: point.speedMs,
         accuracy: 5,
       }));
-      const response = await request(app.getHttpServer())
+      const activityRequest = request(app.getHttpServer())
         .post('/activities')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
@@ -475,8 +475,16 @@ describe('Activities + Circuits flow (e2e)', () => {
           startedAt: points[0].recordedAt,
           endedAt: points[points.length - 1].recordedAt,
           points,
-        })
-        .expect(201);
+        });
+      if (scenario === 'TOO_FAST') {
+        const rejectedResponse = await activityRequest.expect(400);
+        expect(rejectedResponse.body.message).toContain(
+          'puntos válidos tras filtrar precisión y saltos de GPS',
+        );
+        continue;
+      }
+
+      const response = await activityRequest.expect(201);
       const result = response.body as {
         detectedAttempts: {
           circuitId: string;
