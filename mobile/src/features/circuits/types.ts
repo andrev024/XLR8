@@ -24,6 +24,16 @@ export interface GeoJsonLineString {
   coordinates: [number, number][];
 }
 
+export interface RouteSegment {
+  id: string;
+  name: string;
+  start: string;
+  finish: string;
+  distanceMeters: number;
+  isClosedRoute?: boolean;
+  path?: GeoJsonLineString;
+}
+
 export interface CircuitDetail extends Omit<Circuit, "location"> {
   startLine: GeoJsonLineString;
   finishLine: GeoJsonLineString;

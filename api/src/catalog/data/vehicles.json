@@ -12,6 +12,16 @@
   {
     "type": "MOTORCYCLE",
     "brand": "Yamaha",
+    "model": "FZ",
+    "version": "Versión 3.0 (149 cc)",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 12,
+    "source": "Ficha oficial Incolmotos Yamaha FZ 3.0 2027"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "Yamaha",
     "model": "FZ-S FI",
     "version": "FI (149 cc)",
     "yearFrom": 2022,
@@ -185,9 +195,39 @@
     "model": "NKD 125",
     "version": "125 cc",
     "yearFrom": 2015,
-    "yearTo": null,
+    "yearTo": 2026,
     "horsepower": 10,
     "source": "Ficha técnica AKT NKD 125 Colombia"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "AKT",
+    "model": "NKD 125",
+    "version": "Estándar (124 cc)",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 10,
+    "source": "Ficha oficial AKT NKD 125 2027"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "AKT",
+    "model": "NKD 125",
+    "version": "FP (124 cc)",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 10,
+    "source": "Ficha oficial AKT NKD 125 FP 2027"
+  },
+  {
+    "type": "MOTORCYCLE",
+    "brand": "AKT",
+    "model": "NKD 125",
+    "version": "Classic (124 cc)",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 10,
+    "source": "Ficha oficial AKT NKD 125 Classic 2027"
   },
   {
     "type": "MOTORCYCLE",
@@ -285,9 +325,49 @@
     "model": "Onix",
     "version": "1.0 Turbo",
     "yearFrom": 2021,
-    "yearTo": null,
+    "yearTo": 2026,
     "horsepower": 116,
     "source": "Ficha técnica Chevrolet Onix Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Onix",
+    "version": "Sedán LT MT 1.0 Turbo",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 115,
+    "source": "Ficha oficial Chevrolet Onix Sedán 2027"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Onix",
+    "version": "Sedán LT AT 1.0 Turbo",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 115,
+    "source": "Ficha oficial Chevrolet Onix Sedán 2027"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Onix",
+    "version": "Sedán LTZ AT 1.0 Turbo",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 115,
+    "source": "Ficha oficial Chevrolet Onix Sedán 2027"
+  },
+  {
+    "type": "CAR",
+    "brand": "Chevrolet",
+    "model": "Onix",
+    "version": "Sedán Premier AT 1.0 Turbo",
+    "yearFrom": 2027,
+    "yearTo": null,
+    "horsepower": 115,
+    "source": "Ficha oficial Chevrolet Onix Sedán 2027"
   },
   {
     "type": "CAR",
@@ -425,9 +505,49 @@
     "model": "Picanto",
     "version": "1.2",
     "yearFrom": 2015,
-    "yearTo": null,
+    "yearTo": 2025,
     "horsepower": 83,
     "source": "Ficha técnica Kia Picanto Colombia"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Picanto",
+    "version": "Vibrant MT (1.0L)",
+    "yearFrom": 2026,
+    "yearTo": null,
+    "horsepower": 66,
+    "source": "Ficha oficial Kia Picanto Vibrant MT 2026-2027"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Picanto",
+    "version": "Zenith MT (1.25L)",
+    "yearFrom": 2026,
+    "yearTo": null,
+    "horsepower": 83,
+    "source": "Ficha oficial Kia Picanto Zenith MT 2026-2027"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Picanto",
+    "version": "Zenith AT (1.25L)",
+    "yearFrom": 2026,
+    "yearTo": null,
+    "horsepower": 83,
+    "source": "Ficha oficial Kia Picanto Zenith AT 2026-2027"
+  },
+  {
+    "type": "CAR",
+    "brand": "Kia",
+    "model": "Picanto",
+    "version": "GT Line (1.25L)",
+    "yearFrom": 2026,
+    "yearTo": null,
+    "horsepower": 83,
+    "source": "Ficha oficial Kia Picanto GT Line 2026-2027"
   },
   {
     "type": "CAR",

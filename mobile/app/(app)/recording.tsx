@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -41,6 +41,8 @@ export default function RecordingScreen() {
     string | null
   >(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const startingRef = useRef(false);
   const [now, setNow] = useState(0);
   const [autoEnabled, setAutoEnabled] = useState(false);
   const [autoTimeoutMs, setAutoTimeoutMs] = useState(
@@ -101,12 +103,20 @@ export default function RecordingScreen() {
     recording.status === "recording" || recording.status === "paused";
 
   async function handleStart(vehicle: Vehicle): Promise<void> {
+    if (startingRef.current) {
+      return;
+    }
+    startingRef.current = true;
+    setStarting(true);
     setErrorMessage(null);
     try {
       await beginRecording(vehicle.id);
       setAutoEnabled(false);
     } catch (error) {
       setErrorMessage(toErrorMessage(error));
+    } finally {
+      startingRef.current = false;
+      setStarting(false);
     }
   }
 
@@ -350,6 +360,7 @@ export default function RecordingScreen() {
           <Button
             label="Iniciar grabación"
             onPress={() => void handleStart(selectedVehicle)}
+            loading={starting}
           />
         ) : null}
         {recording.status === "recording" ? (

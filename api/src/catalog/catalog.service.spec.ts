@@ -39,15 +39,84 @@ describe('CatalogService', () => {
   it('returns version years and horsepower without internal catalog fields', () => {
     expect(
       service.findVersions(VehicleType.MOTORCYCLE, 'Yamaha', 'FZ'),
-    ).toEqual([
-      {
-        version: '2.0 (149 cc)',
-        yearFrom: 2015,
-        yearTo: 2021,
-        horsepower: 13,
-        source: 'Ficha técnica Yamaha FZ 2.0 Colombia',
-      },
-    ]);
+    ).toEqual(
+      expect.arrayContaining([
+        {
+          version: '2.0 (149 cc)',
+          yearFrom: 2015,
+          yearTo: 2021,
+          horsepower: 13,
+          source: 'Ficha técnica Yamaha FZ 2.0 Colombia',
+        },
+        {
+          version: 'Versión 3.0 (149 cc)',
+          yearFrom: 2027,
+          yearTo: null,
+          horsepower: 12,
+          source: 'Ficha oficial Incolmotos Yamaha FZ 3.0 2027',
+        },
+      ]),
+    );
+  });
+
+  it('lists current official variants for popular Colombian models', () => {
+    const aktVersions = service.findVersions(
+      VehicleType.MOTORCYCLE,
+      'AKT',
+      'NKD 125',
+    );
+    expect(aktVersions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ version: 'Estándar (124 cc)' }),
+        expect.objectContaining({ version: 'FP (124 cc)' }),
+        expect.objectContaining({ version: 'Classic (124 cc)' }),
+      ]),
+    );
+
+    const onixVersions = service.findVersions(
+      VehicleType.CAR,
+      'Chevrolet',
+      'Onix',
+    );
+    expect(onixVersions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          version: 'Sedán LT MT 1.0 Turbo',
+          yearFrom: 2027,
+          horsepower: 115,
+        }),
+        expect.objectContaining({
+          version: 'Sedán Premier AT 1.0 Turbo',
+          yearFrom: 2027,
+          horsepower: 115,
+        }),
+      ]),
+    );
+
+    const picantoVersions = service.findVersions(
+      VehicleType.CAR,
+      'Kia',
+      'Picanto',
+    );
+    expect(picantoVersions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          version: 'Vibrant MT (1.0L)',
+          yearFrom: 2026,
+          horsepower: 66,
+        }),
+        expect.objectContaining({
+          version: 'Zenith AT (1.25L)',
+          yearFrom: 2026,
+          horsepower: 83,
+        }),
+        expect.objectContaining({
+          version: 'GT Line (1.25L)',
+          yearFrom: 2026,
+          horsepower: 83,
+        }),
+      ]),
+    );
   });
 
   it('lists additional models without claiming unverified technical data', () => {

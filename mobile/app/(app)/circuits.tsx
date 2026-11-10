@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -12,6 +13,7 @@ import { EmptyState } from "../../src/components/EmptyState";
 import { ErrorState } from "../../src/components/ErrorState";
 import { Screen } from "../../src/components/Screen";
 import { CircuitMap } from "../../src/features/circuits/components/CircuitMap";
+import { routeSegments } from "../../src/features/circuits/segments";
 import {
   distanceBetweenMeters,
   sortCircuitsByDistance,
@@ -67,23 +69,33 @@ export default function CircuitsScreen() {
 
   if (circuitsQuery.isLoading) {
     return (
-      <Screen>
-        <View style={styles.loading}>
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </View>
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <View style={styles.loading}>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
+          <RouteSegments
+            onSegmentPress={(id) => router.push(`/(app)/segments/${id}`)}
+          />
+        </ScrollView>
       </Screen>
     );
   }
 
   if (circuitsQuery.isError) {
     return (
-      <Screen>
-        <ErrorState
-          message="No se pudieron cargar los circuitos."
-          onRetry={() => void circuitsQuery.refetch()}
-        />
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.content}>
+          <ErrorState
+            message="No se pudieron cargar los circuitos guardados."
+            onRetry={() => void circuitsQuery.refetch()}
+          />
+          <RouteSegments
+            onSegmentPress={(id) => router.push(`/(app)/segments/${id}`)}
+          />
+        </ScrollView>
       </Screen>
     );
   }
@@ -103,15 +115,25 @@ export default function CircuitsScreen() {
             {locationMessage ? (
               <Text style={styles.locationMessage}>{locationMessage}</Text>
             ) : null}
-            {circuits.length > 0 && (
-              <CircuitMap circuits={circuits} height={260} />
+            {(circuits.length > 0 ||
+              routeSegments.some((segment) => segment.path)) && (
+              <CircuitMap
+                circuits={circuits}
+                routeSegments={routeSegments}
+                height={260}
+              />
             )}
           </View>
         }
         ListEmptyComponent={
           <EmptyState
             title="Aún no hay circuitos"
-            description="Los circuitos disponibles aparecerán aquí."
+            description="Los circuitos guardados aparecerán aquí. Consulta abajo los segmentos compartidos."
+          />
+        }
+        ListFooterComponent={
+          <RouteSegments
+            onSegmentPress={(id) => router.push(`/(app)/segments/${id}`)}
           />
         }
         renderItem={({ item }) => (
@@ -123,6 +145,54 @@ export default function CircuitsScreen() {
         )}
       />
     </Screen>
+  );
+}
+
+function RouteSegments({
+  onSegmentPress,
+}: {
+  onSegmentPress: (id: string) => void;
+}) {
+  return (
+    <View style={styles.segmentSection}>
+      <Text style={styles.sectionTitle}>Rutas compartidas</Text>
+      <Text style={styles.segmentNotice}>
+        Son recorridos de referencia en vías públicas: se muestran para
+        grabación personal y no participan en rankings competitivos.
+      </Text>
+      {routeSegments.map((segment) => (
+        <Pressable
+          key={segment.id}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !segment.path }}
+          disabled={!segment.path}
+          onPress={() => onSegmentPress(segment.id)}
+          style={({ pressed }) => [
+            styles.segmentCard,
+            pressed && styles.pressed,
+            !segment.path && styles.disabledSegment,
+          ]}
+        >
+          <View style={styles.cardRow}>
+            <Text style={styles.cardTitle}>
+              {segment.name} ·{" "}
+              {segment.isClosedRoute ? "Ruta cerrada" : "Segmento"}
+            </Text>
+            <Text style={styles.distance}>
+              ~{formatDistance(segment.distanceMeters)}
+            </Text>
+          </View>
+          <Text style={styles.description}>
+            {segment.start} → {segment.finish}
+          </Text>
+          <Text style={styles.segmentAction}>
+            {segment.path
+              ? "Abrir mapa y registrar recorrido personal"
+              : "Mapa pendiente de georreferenciar"}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
   );
 }
 
@@ -178,6 +248,19 @@ function SkeletonCard() {
 const styles = StyleSheet.create({
   content: { flexGrow: 1, padding: 16, gap: 12, paddingBottom: 32 },
   header: { gap: 12, marginBottom: 6 },
+  segmentSection: { gap: 10, marginTop: 16 },
+  sectionTitle: { color: colors.textPrimary, fontSize: 18, fontWeight: "700" },
+  segmentNotice: { color: colors.textSecondary, fontSize: 13, lineHeight: 18 },
+  segmentCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    borderColor: colors.border,
+    borderWidth: 1,
+    padding: 16,
+    gap: 8,
+  },
+  disabledSegment: { opacity: 0.65 },
+  segmentAction: { color: colors.accent, fontSize: 13, fontWeight: "600" },
   loading: { gap: 14 },
   title: { color: colors.textPrimary, fontSize: 24, fontWeight: "700" },
   subtitle: { color: colors.textSecondary, fontSize: 14 },
@@ -196,7 +279,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  cardTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "700", flex: 1 },
+  cardTitle: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "700",
+    flex: 1,
+  },
   distance: { color: colors.accent, fontWeight: "700" },
   description: { color: colors.textSecondary, fontSize: 13 },
   pressed: { opacity: 0.8 },

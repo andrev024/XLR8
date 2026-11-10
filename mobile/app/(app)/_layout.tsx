@@ -56,6 +56,7 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen name="circuits/[id]" options={{ href: null }} />
+      <Tabs.Screen name="segments/[id]" options={{ href: null }} />
       <Tabs.Screen name="activities/[id]" options={{ href: null }} />
       <Tabs.Screen
         name="vehicles"

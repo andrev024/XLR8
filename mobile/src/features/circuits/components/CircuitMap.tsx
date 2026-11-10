@@ -7,19 +7,21 @@ import {
   Map as MapLibre,
   type CameraRef,
 } from "@maplibre/maplibre-react-native";
-import type { Circuit, CircuitDetail } from "../types";
+import type { Circuit, CircuitDetail, RouteSegment } from "../types";
 
 const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 
 interface CircuitMapProps {
   circuits?: Circuit[];
   circuit?: CircuitDetail;
+  routeSegments?: RouteSegment[];
   height?: number;
 }
 
 export function CircuitMap({
   circuits = [],
   circuit,
+  routeSegments = [],
   height = 280,
 }: CircuitMapProps) {
   const camera = useRef<CameraRef>(null);
@@ -60,6 +62,60 @@ export function CircuitMap({
     }),
     [circuits],
   );
+  const segmentPaths = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: routeSegments.flatMap((segment) =>
+        segment.path
+          ? [
+              {
+                type: "Feature" as const,
+                properties: { id: segment.id },
+                geometry: segment.path,
+              },
+            ]
+          : [],
+      ),
+    }),
+    [routeSegments],
+  );
+  const segmentStarts = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: routeSegments.flatMap((segment) => {
+        const start = segment.path?.coordinates[0];
+        return start
+          ? [
+              {
+                type: "Feature" as const,
+                properties: { id: segment.id },
+                geometry: { type: "Point" as const, coordinates: start },
+              },
+            ]
+          : [];
+      }),
+    }),
+    [routeSegments],
+  );
+  const segmentFinishes = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: routeSegments.flatMap((segment) => {
+        const coordinates = segment.path?.coordinates;
+        const finish = coordinates?.[coordinates.length - 1];
+        return finish
+          ? [
+              {
+                type: "Feature" as const,
+                properties: { id: segment.id },
+                geometry: { type: "Point" as const, coordinates: finish },
+              },
+            ]
+          : [];
+      }),
+    }),
+    [routeSegments],
+  );
   const reference = useMemo(
     () => lineFeature(circuit?.referencePath?.coordinates ?? []),
     [circuit?.referencePath],
@@ -73,8 +129,11 @@ export function CircuitMap({
     [circuit?.finishLine],
   );
   const bounds = useMemo(
-    () => (circuit ? getCircuitBounds(circuit) : getLocationBounds(circuits)),
-    [circuit, circuits],
+    () =>
+      circuit
+        ? getCircuitBounds(circuit)
+        : getLocationBounds(circuits, routeSegments),
+    [circuit, circuits, routeSegments],
   );
 
   useEffect(() => {
@@ -89,7 +148,7 @@ export function CircuitMap({
     }
   }, [bounds]);
 
-  if (!circuit && circuits.length === 0) {
+  if (!circuit && circuits.length === 0 && routeSegments.length === 0) {
     return (
       <View
         accessibilityLabel="Mapa sin circuitos"
@@ -105,9 +164,13 @@ export function CircuitMap({
           ref={camera}
           initialViewState={{
             center: circuit
-              ? circuit.referencePath?.coordinates[0] ?? [-74.09, 4.64]
-              : [circuits[0]?.location?.lng ?? -74.09, circuits[0]?.location?.lat ?? 4.64],
-            zoom: circuit ? 13 : 10,
+              ? (circuit.referencePath?.coordinates[0] ?? [-74.09, 4.64])
+              : (routeSegments.find((item) => item.path)?.path
+                  ?.coordinates[0] ?? [
+                  circuits[0]?.location?.lng ?? -74.09,
+                  circuits[0]?.location?.lat ?? 4.64,
+                ]),
+            zoom: circuit ? 13 : routeSegments.length > 0 ? 15 : 10,
           }}
         />
         {!circuit && markers.features.length > 0 && (
@@ -133,6 +196,50 @@ export function CircuitMap({
                 "line-color": "#C6FF00",
                 "line-width": 4,
                 "line-opacity": 0.9,
+              }}
+            />
+          </GeoJSONSource>
+        )}
+        {segmentPaths.features.length > 0 && (
+          <GeoJSONSource id="xlr8-shared-segment-paths" data={segmentPaths}>
+            <Layer
+              type="line"
+              id="xlr8-shared-segment-path"
+              paint={{
+                "line-color": "#58B9E8",
+                "line-width": 5,
+                "line-opacity": 0.9,
+              }}
+            />
+          </GeoJSONSource>
+        )}
+        {segmentStarts.features.length > 0 && (
+          <GeoJSONSource id="xlr8-shared-segment-starts" data={segmentStarts}>
+            <Layer
+              type="circle"
+              id="xlr8-shared-segment-start"
+              paint={{
+                "circle-color": "#55D187",
+                "circle-radius": 6,
+                "circle-stroke-color": "#141925",
+                "circle-stroke-width": 2,
+              }}
+            />
+          </GeoJSONSource>
+        )}
+        {segmentFinishes.features.length > 0 && (
+          <GeoJSONSource
+            id="xlr8-shared-segment-finishes"
+            data={segmentFinishes}
+          >
+            <Layer
+              type="circle"
+              id="xlr8-shared-segment-finish"
+              paint={{
+                "circle-color": "#F06C75",
+                "circle-radius": 6,
+                "circle-stroke-color": "#141925",
+                "circle-stroke-width": 2,
               }}
             />
           </GeoJSONSource>
@@ -191,15 +298,16 @@ function getCircuitBounds(circuit: CircuitDetail) {
   return getBounds(coordinates);
 }
 
-function getLocationBounds(circuits: Circuit[]) {
-  return getBounds(
-    circuits.flatMap((item) => [
+function getLocationBounds(circuits: Circuit[], routeSegments: RouteSegment[]) {
+  return getBounds([
+    ...circuits.flatMap((item) => [
       ...(item.referencePath?.coordinates ?? []),
       ...(item.location
         ? [[item.location.lng, item.location.lat] as [number, number]]
         : []),
     ]),
-  );
+    ...routeSegments.flatMap((segment) => segment.path?.coordinates ?? []),
+  ]);
 }
 
 function getBounds(coordinates: [number, number][]) {

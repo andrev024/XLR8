@@ -205,13 +205,13 @@ export async function requestRecordingLocationPermissions(
     throw new Error("Debes permitir el acceso a la ubicación para grabar.");
   }
 
-  if (platform === "ios") {
-    const background = await Location.requestBackgroundPermissionsAsync();
-    if (!background.granted) {
-      throw new Error(
-        "Permite la ubicación en segundo plano para mantener la grabación activa.",
-      );
-    }
+  const background = await Location.requestBackgroundPermissionsAsync();
+  if (!background.granted) {
+    throw new Error(
+      platform === "ios"
+        ? "Permite la ubicación en segundo plano para mantener la grabación activa."
+        : "En Ajustes > Aplicaciones > XLR8 > Permisos > Ubicación, selecciona Permitir siempre para mantener la grabación activa.",
+    );
   }
 }
 
