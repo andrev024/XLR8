@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { VehicleType } from '../../generated/prisma';
 import vehicleCatalog from './data/vehicles.json';
+import vehicleModels from './data/vehicle-models.json';
 
 export interface VehicleCatalogEntry {
   type: VehicleType;
@@ -30,6 +31,10 @@ type VehicleCatalogVersionEntry = VehicleCatalogEntry &
   >;
 
 const catalogEntries = vehicleCatalog as VehicleCatalogEntry[];
+const supplementalModels = vehicleModels as Record<
+  VehicleType,
+  Record<string, string[]>
+>;
 
 @Injectable()
 export class CatalogService {
@@ -37,16 +42,18 @@ export class CatalogService {
     return this.uniqueSorted(
       catalogEntries
         .filter((entry) => entry.type === type)
-        .map((entry) => entry.brand),
+        .map((entry) => entry.brand)
+        .concat(Object.keys(supplementalModels[type])),
     );
   }
 
   findModels(type: VehicleType, brand: string): string[] {
-    return this.uniqueSorted(
-      catalogEntries
+    return this.uniqueSorted([
+      ...catalogEntries
         .filter((entry) => entry.type === type && entry.brand === brand)
         .map((entry) => entry.model),
-    );
+      ...(supplementalModels[type][brand] ?? []),
+    ]);
   }
 
   findVersions(

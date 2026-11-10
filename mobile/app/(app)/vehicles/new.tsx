@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { Text } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+} from "react-native";
 import { Screen } from "../../../src/components/Screen";
 import { VehicleForm } from "../../../src/features/vehicles/components/VehicleForm";
 import { useCreateVehicleMutation } from "../../../src/features/vehicles/hooks";
@@ -23,22 +29,39 @@ export default function NewVehicleScreen() {
 
   return (
     <Screen>
-      {apiError ? (
-        <Text
-          style={{
-            color: colors.danger,
-            marginBottom: 16,
-            textAlign: "center",
-          }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardAvoiding}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardDismissMode={
+            Platform.OS === "ios" ? "interactive" : "on-drag"
+          }
+          keyboardShouldPersistTaps="handled"
         >
-          {apiError}
-        </Text>
-      ) : null}
-      <VehicleForm
-        onSubmit={onSubmit}
-        submitLabel="Crear vehículo"
-        submitting={createMutation.isPending}
-      />
+          {apiError ? <Text style={styles.apiError}>{apiError}</Text> : null}
+          <VehicleForm
+            onSubmit={onSubmit}
+            submitLabel="Crear vehículo"
+            submitting={createMutation.isPending}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  keyboardAvoiding: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: 32,
+  },
+  apiError: {
+    color: colors.danger,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+});

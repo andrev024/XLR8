@@ -25,6 +25,7 @@
     },
     "android": {
       "package": "com.xlr8.app",
+      "softwareKeyboardLayoutMode": "resize",
       "permissions": ["POST_NOTIFICATIONS"],
       "adaptiveIcon": {
         "backgroundColor": "#0B0E14",

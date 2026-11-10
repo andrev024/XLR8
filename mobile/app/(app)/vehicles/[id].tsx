@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert, Text, View } from "react-native";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Screen } from "../../../src/components/Screen";
 import { LoadingState } from "../../../src/components/LoadingState";
 import { ErrorState } from "../../../src/components/ErrorState";
@@ -84,42 +92,62 @@ export default function EditVehicleScreen() {
 
   return (
     <Screen>
-      {apiError ? (
-        <Text
-          style={{
-            color: colors.danger,
-            marginBottom: 16,
-            textAlign: "center",
-          }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardAvoiding}
+      >
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardDismissMode={
+            Platform.OS === "ios" ? "interactive" : "on-drag"
+          }
+          keyboardShouldPersistTaps="handled"
         >
-          {apiError}
-        </Text>
-      ) : null}
-      <VehicleForm
-        defaultValues={{
-          type: vehicle.type,
-          brand: vehicle.brand,
-          model: vehicle.model,
-          year: vehicle.year,
-          horsepower: vehicle.horsepower,
-          engineDisplacementCc: vehicle.engineDisplacementCc ?? undefined,
-          engineType: vehicle.engineType ?? undefined,
-          weightKg: vehicle.weightKg ?? undefined,
-          fuelConsumptionLitersPer100Km:
-            vehicle.fuelConsumptionLitersPer100Km ?? undefined,
-        }}
-        onSubmit={onSubmit}
-        submitLabel="Guardar cambios"
-        submitting={updateMutation.isPending}
-      />
-      <View style={{ marginTop: 16 }}>
-        <Button
-          label="Eliminar vehículo"
-          variant="danger"
-          onPress={onDelete}
-          loading={deleteMutation.isPending}
-        />
-      </View>
+          {apiError ? <Text style={styles.apiError}>{apiError}</Text> : null}
+          <VehicleForm
+            defaultValues={{
+              type: vehicle.type,
+              brand: vehicle.brand,
+              model: vehicle.model,
+              year: vehicle.year,
+              horsepower: vehicle.horsepower,
+              engineDisplacementCc: vehicle.engineDisplacementCc ?? undefined,
+              engineType: vehicle.engineType ?? undefined,
+              weightKg: vehicle.weightKg ?? undefined,
+              fuelConsumptionLitersPer100Km:
+                vehicle.fuelConsumptionLitersPer100Km ?? undefined,
+            }}
+            onSubmit={onSubmit}
+            submitLabel="Guardar cambios"
+            submitting={updateMutation.isPending}
+          />
+          <View style={styles.deleteButton}>
+            <Button
+              label="Eliminar vehículo"
+              variant="danger"
+              onPress={onDelete}
+              loading={deleteMutation.isPending}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  keyboardAvoiding: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: 32,
+  },
+  apiError: {
+    color: colors.danger,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  deleteButton: {
+    marginTop: 16,
+  },
+});

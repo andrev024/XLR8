@@ -4,6 +4,16 @@ import { CatalogService } from './catalog.service';
 describe('CatalogService', () => {
   const service = new CatalogService();
 
+  it('provides at least ten models for every catalog brand', () => {
+    for (const type of [VehicleType.MOTORCYCLE, VehicleType.CAR]) {
+      for (const brand of service.findBrands(type)) {
+        expect(service.findModels(type, brand).length).toBeGreaterThanOrEqual(
+          10,
+        );
+      }
+    }
+  });
+
   it('lists at least 25 motorcycle and car brands/models in the catalog', () => {
     const motorcycleModels = service
       .findBrands(VehicleType.MOTORCYCLE)
@@ -50,5 +60,9 @@ describe('CatalogService', () => {
     ).toEqual([]);
     expect(service.findBrands(VehicleType.CAR)).toContain('BYD');
     expect(service.findModels(VehicleType.CAR, 'BYD')).toContain('Dolphin');
+  });
+
+  it('does not imply technical versions for supplemental model names', () => {
+    expect(service.findVersions(VehicleType.CAR, 'Audi', 'A4')).toEqual([]);
   });
 });
